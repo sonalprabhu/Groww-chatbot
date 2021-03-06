@@ -1,0 +1,130 @@
+.chatbot{
+  position: fixed;
+    bottom:50px;
+    right:40px;  
+}
+
+.bot-btn{
+  position: fixed;
+    bottom:10px;
+    right:40px;
+    height:50px;
+    width:50px;
+    border-radius:50%;
+    background-image:url("../assets/botlogo.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+
+.logo{
+    background-color:white;
+    border-color: white;
+}
+
+
+.mainLabel{
+  font-size: 16px;
+  -webkit-font-smoothing: auto;
+  letter-spacing: .3px;
+  color: #44475b;
+  margin: 0px 13px;
+  cursor: pointer;
+  --webkit-tap-highlight-color:transparent;
+}
+
+a:hover{
+  color:#00d09c;
+  text-decoration: transparent
+}
+
+.options{
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.subLabel{
+  font-size: 18px;
+  color: #44475b;
+  line-height: 15px;
+  padding-right: 45px;
+  margin-right:10px;
+  height: 54px;
+  --webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing: auto;
+}
+
+.wrapper{
+  padding:20px;
+}
+
+.selected-option{
+  border-bottom: 3px solid #00d09c;
+  will-change: left,width;
+  transition: left .2s linear,width .2s linear;
+}
+
+.item-card{
+  box-shadow: 0 1px 7px 0 rgba(0,0,0,0.1);
+    max-width: 165px;
+    min-height: 190px;
+    min-width: 168px;
+    width: 100%;
+    position: relative;
+    transition: all .3s ease;
+    padding-left: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding-bottom: 15px;
+    padding-top: 15px;
+    border-radius: 8px;
+    margin-right: 15px;
+}
+
+.item-name{
+  line-height: 1.57;
+  letter-spacing: .19px;
+  color:#44475b;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 15px;
+  min-height: 45px;
+}
+
+.item-price{
+  font-size: 16px;
+    font-weight: 500;
+    line-height: 1;
+    color: #44475b;
+    margin-right: 7px;
+    margin-bottom: 10px;
+}
+
+.price-change{
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.14;
+  color:#00d09c;
+}
+
+.heading{
+  font-size: 21px;
+    font-weight: 500;
+    letter-spacing: -.23px;
+    color: #44475b;
+}
+.learning-options-container {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.learning-option-button {
+  padding: 0.5rem;
+  border-radius: 25px;
+  background: transparent;
+  border: 1px solid green;
+  margin: 3px;
+}
