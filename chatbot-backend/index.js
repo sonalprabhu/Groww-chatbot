@@ -57,16 +57,17 @@ app.get('/user-specific-order-details',async (req,res)=>{
     }
     else{
         try{
-            let faqs = new Set();
             let user = await User.findById(userId).exec();
-            let order = await Order.findById(user.userOrders[0]).exec();
-            for(const faqFetchedId of order.faqId){
-                let faqFetched = await Faq.findById(faqFetchedId).exec();
-                if(faqFetched.faqQuestionSubCategoryL1 === 'General'){
-                    faqs.add({QuestionId: faqFetchedId,QuestionText: faqFetched.faqQuestionText});
+            if(user === null || user === undefined)
+                res.sendStatus(404);
+            else{
+                let faqs = new Set();
+                let faqFetchedOrdersGeneral = await Faq.find({faqQuestionCategory: 'Orders',faqQuestionSubCategoryL1: 'General'}).exec();
+                for(const faq of faqFetchedOrdersGeneral){
+                    faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
                 }
+                res.status(200).json([...faqs]);
             }
-            res.status(200).json([...faqs]);
         }
         catch(err){
             res.sendStatus(500);

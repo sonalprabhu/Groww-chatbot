@@ -70,11 +70,12 @@ async function addOrders(){
         let faqsToBeLinked = await Faq.find(
                                                 {$and: [
                                                     {faqQuestionCategory: 'Orders'},
-                                                    {$or: [
-                                                            {faqQuestionSubCategoryL1: order.orderStatus},
-                                                            {faqQuestionSubCategoryL1: 'General'}
-                                                        ]
-                                                    }
+                                                    {faqQuestionSubCategoryL1: order.orderStatus},
+                                                    // {$or: [
+                                                    //         {faqQuestionSubCategoryL1: order.orderStatus},
+                                                    //         {faqQuestionSubCategoryL1: 'General'}
+                                                    //     ]
+                                                    // }
                                                 ]}).exec();
         for(const faq of faqsToBeLinked){
             order.faqId.push(faq._id);
