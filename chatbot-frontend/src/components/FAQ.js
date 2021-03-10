@@ -1,10 +1,21 @@
-import React from 'react';
 import './App.css';
-import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 export default function FAQ(props) {
-    const location = useLocation();
     const currentLoc = window.location.pathname;
+    const [options,setOptions]=useState([]);
+
+    useEffect(async () => {
+
+      var questions = await axios.get(`http://localhost:8081/questions`)
+      .then(res => {
+        return res.data.questions;
+      });
+      setOptions(questions);
+
+  }, []);
+
 
     const mapper={
       "/stocks":"Stocks",
@@ -12,32 +23,21 @@ export default function FAQ(props) {
       "/gold":"Gold",
       "/mutualfund":"Mutual Funds"
     }
-
-    console.log(mapper[currentLoc])
-    const options = [
-        {
-          text: "Account",
-          handler: props.actionProvider.handleAccountList,
-          id: 1,
-        },
-        { text: "Stocks", handler:props.actionProvider.handleAccountList, id: 2 },
-        { text: "Mutual Funds", handler:props.actionProvider.handleAccountList, id: 3 },
-        { text: "FD", handler:props.actionProvider.handleAccountList, id: 4 },
-        { text: "Gold", handler:props.actionProvider.handleAccountList, id: 5 },
-      ];
+  
     
-      const selectedOptions = options.filter((option)=> option.text == mapper[currentLoc])
-      const optionsMarkup = selectedOptions.map((option) => (
+      //const selectedOptions = options.filter((option)=> option.text === mapper[currentLoc])
+      const optionsMarkup = options.map((option) => (
         <button
           className="learning-option-button"
           key={option.id}
-          onClick={()=>option.handler(option.text)}
+          onClick={()=>props.actionProvider.handleQuestionClick(option)}
         >
-          {option.text}
+          {option.questionText}
         </button>
       ));
     
       return(
-        <div className="learning-options-container">{optionsMarkup}</div>
+        <div className="learning-options-container">
+        {optionsMarkup}</div>
       );
 }

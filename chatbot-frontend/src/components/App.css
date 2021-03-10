@@ -34,6 +34,20 @@
   --webkit-tap-highlight-color:transparent;
 }
 
+.sideLabel{
+  font-size: 16px;
+  -webkit-font-smoothing: auto;
+  letter-spacing: .3px;
+  color: #44475b;
+  margin: 0px 13px 0px 630px;
+  cursor: pointer;
+  --webkit-tap-highlight-color:transparent;
+}
+
+.sideLabel.side{
+ margin-left:0px;
+}
+
 a:hover{
   color:#00d09c;
   text-decoration: transparent
@@ -117,13 +131,14 @@ a:hover{
 }
 .learning-options-container {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .learning-option-button {
   padding: 0.5rem;
-  border-radius: 25px;
+  border-radius: 5px;
   background: transparent;
   border: 1px solid green;
   margin: 3px;

@@ -1,10 +1,11 @@
-import { createChatBotMessage,updateChatBotState } from "react-chatbot-kit";
+import { createChatBotMessage} from "react-chatbot-kit";
 import FAQ from '../components/FAQ';
 
-  function Config(props) {
-    return{
+ const config =
+ {
     botName:"Groww Chatbot",
-    initialMessages: [createChatBotMessage("Hello!What do you want to know?",{widget:"FAQ"}),],
+    initialMessages: [
+      createChatBotMessage("Hello!What do you want to know?",{widget:"FAQ"}),],
     customStyles: {
       botMessageBox: {
         backgroundColor: "#00d09c",
@@ -19,7 +20,6 @@ import FAQ from '../components/FAQ';
        widgetFunc: (props) => <FAQ {...props} />,
       },
   ],
-  };
 }
 
-export default Config;
+export default config;
