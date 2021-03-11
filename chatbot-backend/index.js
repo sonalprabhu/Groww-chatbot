@@ -25,6 +25,29 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
+async function fetchUserKycFaqs(userId){
+    let userKycFaqs = new Set();
+    try{
+        if(userId !== null){
+            let userObj = await User.findById(userId).exec();
+            if(userObj !== null && userObj !== undefined){
+                if(userObj.userKyc.status !== 'Completed'){
+                    let kycFaqs = await Faq.find({faqQuestionCategory: 'My Account',faqQuestionSubCategoryL1: 'KYC'}).exec();
+                    for(const faq of kycFaqs){
+                        userKycFaqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
+                    }
+                }
+            }
+        }
+    }
+    catch(err){
+        //do nothing
+    }
+    finally{
+        return [...userKycFaqs];
+    }
+}
+
 app.get('/',()=>{
     console.log('Welcome to Groww pilot backend');
 });
@@ -32,6 +55,7 @@ app.get('/',()=>{
 
 app.get('/search-on-category',async (req,res)=>{
     const categoryName = req.query.categoryName;
+    const userId = req.query.user;
     if(categoryName === null){
         res.sendStatus(404);
     }
@@ -39,13 +63,21 @@ app.get('/search-on-category',async (req,res)=>{
         try
         {
             let faqsFetched =  await Faq.find({faqQuestionCategory: categoryName}).exec();
-            let response = faqsFetched.map((faq)=> {
-                return ({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
-            });
-            res.status(200).json(response);
+            if(faqsFetched === null || faqsFetched === undefined){
+                res.sendStatus(404);
+            }
+            else{
+                let response = faqsFetched.map((faq)=> {
+                    return ({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
+                });
+                let userKycFaqs = await fetchUserKycFaqs(userId);
+                if(userKycFaqs.length !== 0)
+                    response = userKycFaqs.concat(response);
+                res.status(200).json(response);
+            }
         }
         catch(err){
-            res.sendStatus(500);
+            res.sendStatus(404);
         }
     }
 });
@@ -66,11 +98,15 @@ app.get('/user-specific-order-details',async (req,res)=>{
                 for(const faq of faqFetchedOrdersGeneral){
                     faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
                 }
-                res.status(200).json([...faqs]);
+                let userKycFaqs = await fetchUserKycFaqs(userId);
+                faqs = [...faqs];
+                if(userKycFaqs.length !==0)
+                    faqs = userKycFaqs.concat(faqs);
+                res.status(200).json(faqs);
             }
         }
         catch(err){
-            res.sendStatus(500);
+            res.sendStatus(404);
         }
     }   
 });
@@ -85,14 +121,23 @@ app.get('/user-account-questions',async (req,res)=> {
         try{
             let faqs = new Set();
             let user = await User.findById(userId).exec();
-            for(const userAccountFaqId of user.faqId){
-                let faqFetched = await Faq.findById(userAccountFaqId).exec();
-                faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
+            if(user === null || user === undefined){
+                res.sendStatus(404);
             }
-            res.status(200).json([...faqs]);
+            else{
+                for(const userAccountFaqId of user.faqId){
+                    let faqFetched = await Faq.findById(userAccountFaqId).exec();
+                    faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
+                }
+                let userKycFaqs = await fetchUserKycFaqs(userId);
+                faqs = [...faqs];
+                if(userKycFaqs.length !==0)
+                    faqs = userKycFaqs.concat(faqs);
+                res.status(200).json(faqs);
+            }
         }
         catch(err){
-            res.sendStatus(500);
+            res.sendStatus(404);
         }
     }
 });
@@ -107,14 +152,24 @@ app.get('/product-specific-questions',async (req,res)=>{
         try{
             let faqs = new Set();
             let product = await Product.findById(productId).exec();
-            for(const productFaqId of product.faqId){
-                let faqFetched = await Faq.findById(productFaqId).exec();
-                faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
+            if(product === null || product === undefined){
+                res.sendStatus(404);
             }
-            res.status(200).json([...faqs]);
+            else{
+                for(const productFaqId of product.faqId){
+                    let faqFetched = await Faq.findById(productFaqId).exec();
+                    faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
+                }
+                let userKycFaqs = await fetchUserKycFaqs(userId);
+                faqs = [...faqs];
+                if(userKycFaqs.length !==0)
+                    faqs = userKycFaqs.concat(faqs);
+                res.status(200).json(faqs);
+            }
         }
         catch(err){
-            res.sendStatus(500);
+            console.error(err);
+            res.sendStatus(404);
         }
     } 
 });
@@ -129,26 +184,56 @@ app.get('/order-specific-questions',async (req,res)=>{
         try{
             let faqs = new Set();
             let user = await User.findById(userId).exec();
-            let checkOrderPresent = user.userOrders.find((userOrderId)=>(userOrderId.toString() === orderId));
-            if(checkOrderPresent !== null && checkOrderPresent !== undefined){
-                let order = await Order.findById(orderId).exec();
-                for(const faqFetchedId of order.faqId){
-                    let faq = await Faq.findById(faqFetchedId).exec();
-                    if(faq.faqQuestionSubCategoryL1 !== 'General'){
-                        faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
+            if(user === null || user === undefined){
+                res.sendStatus(404);
+            }
+            else{
+                let checkOrderPresent = user.userOrders.find((userOrderId)=>(userOrderId.toString() === orderId));
+                if(checkOrderPresent !== null && checkOrderPresent !== undefined){
+                    let order = await Order.findById(orderId).exec();
+                    for(const faqFetchedId of order.faqId){
+                        let faq = await Faq.findById(faqFetchedId).exec();
+                        if(faq.faqQuestionSubCategoryL1 !== 'General'){
+                            faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
+                        }
                     }
+                    let userKycFaqs = await fetchUserKycFaqs(userId);
+                    faqs = [...faqs];
+                    if(userKycFaqs.length !==0)
+                        faqs = userKycFaqs.concat(faqs);
+                    res.status(200).json(faqs);
                 }
-                res.status(200).json([...faqs]);
+                else{
+                    res.sendStatus(404);
+                }
+            }
+        }
+        catch(err){
+            res.sendStatus(404);
+        }
+    }
+});
+
+app.get('/get-answer-by-questionId/:questionId',async (req,res)=>{
+    const questionId = req.params.questionId.toString();
+    if(questionId === null || questionId === undefined){
+        res.sendStatus(404);
+    }
+    else{
+        try{
+            let faq = await Faq.findById(questionId).exec();
+            if(faq !== null && faq !== undefined){
+                res.status(200).json({Answer: faq.faqAnswerText});
             }
             else{
                 res.sendStatus(404);
             }
         }
         catch(err){
-            res.sendStatus(500);
+            res.sendStatus(404);
         }
     }
-});
+})
 //Chatbot specific APIs
 // app.post('/getAllQuestions',async (req,res)=>{
 //     const context = await req.body.context;
