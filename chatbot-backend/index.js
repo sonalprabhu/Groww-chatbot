@@ -129,10 +129,7 @@ app.get('/user-account-questions',async (req,res)=> {
                     let faqFetched = await Faq.findById(userAccountFaqId).exec();
                     faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
                 }
-                let userKycFaqs = await fetchUserKycFaqs(userId);
                 faqs = [...faqs];
-                if(userKycFaqs.length !==0)
-                    faqs = userKycFaqs.concat(faqs);
                 res.status(200).json(faqs);
             }
         }
