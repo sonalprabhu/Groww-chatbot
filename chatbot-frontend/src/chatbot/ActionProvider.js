@@ -26,10 +26,10 @@ class ActionProvider {
     };
 
     handleQuestionClick = (selectedQuestion) =>{
-      const clientMessage=this.createClientMessage(selectedQuestion.questionText)
-      axios.get(`http://localhost:8081/answer/${selectedQuestion._id}`)
+      const clientMessage=this.createClientMessage(selectedQuestion.QuestionText)
+      axios.get(`http://localhost:8081/get-answer-by-questionId/${selectedQuestion.QuestionId}`)
       .then(res => {
-        var ans = res.data.answer;
+        var ans = res.data.Answer;
         var message = this.createChatBotMessage(ans)
         this.updateChatbotState(message,clientMessage);
       });

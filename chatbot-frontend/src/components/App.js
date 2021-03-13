@@ -4,11 +4,15 @@ import Header from './Header';
 import Chatbot from 'react-chatbot-kit';
 import ActionProvider from '../chatbot/ActionProvider';
 import MessageParser from '../chatbot/MessageParser';
-import config from '../chatbot/config';
-import Button from 'react-bootstrap/esm/Button';
-import { BrowserRouter, useLocation} from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
 import { createChatBotMessage} from "react-chatbot-kit";
 import FAQ from '../components/FAQ';
+import { BrowserRouter, Link,Switch,Route,Redirect} from 'react-router-dom';
+import Categories from './Categories';
+import ProductPage from './ProductPage'
+import Orders from './Orders';
+import Account from './Account';
+import PrivateRoute from './PrivateRoute';
 
 function App(props) {
 
@@ -53,15 +57,22 @@ const config={
 
   return (
     <div className="App">
-      <BrowserRouter>
       <Header user={user} login={()=>login()} refreshChatbot={() =>toggleBot(false) }/>
+      <div className="container web-align wrapper">
+          <Switch><Route path="/:product/:id" component={ProductPage }/>}/> </Switch> 
+          <Switch> <Route exact path="/fd" render={()=> <Categories text="FD"/>} /> </Switch>
+          <Switch> <Route exact path="/gold" render={()=> <Categories text="Gold"/>}/></Switch>
+          <Switch> <Route exact path="/mutualfund" render={()=> <Categories text="Mutual Funds"/>} /></Switch>
+          <Switch> <Route exact path="/stocks" component={()=> <Categories text="Stocks"/>} /> </Switch>
+          <Switch> <PrivateRoute exact path="/orders" isAuthenticated={user !== 'guest'} component={Orders} /> </Switch>
+          <Switch> <PrivateRoute exact path="/account" isAuthenticated={user !== 'guest'} component={Account} /> </Switch>
+      </div>
       <div className="chatbot">
       {showBot && ( 
       <Chatbot config={config} 
       actionProvider={ActionProvider} messageParser={MessageParser} />)}
        <Button className="bot-btn" onClick={() => toggleBot((prev) => !prev)}>&nbsp;</Button>
       </div>
-      </BrowserRouter>
     </div>
   );
 }
