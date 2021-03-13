@@ -2,11 +2,13 @@ const {Faq} = require('./models/faqs');
 const {User} = require('./models/user');
 const {Order} = require('./models/order');
 const {Product} = require('./models/product');
+const {Category} = require('./models/category');
+const {createCategoriesGraph} = require('./categoriesGraph');
 const {faqArr,userArr,ordersArr,productArr} = require('./data');
 
 async function addFaqs(){
     console.log('Deleting all the data in the faqs collection...');
-    let deleteAllQuestions = await Faq.deleteMany().exec();
+    let deleteAllFaqs = await Faq.deleteMany().exec();
     console.log('All faqs deleted. Total faq size '+faqArr.length+'...Adding faqs...');
 
     for(const faq of faqArr){
@@ -17,13 +19,76 @@ async function addFaqs(){
     console.log('Faqs added successfully');
     return true;
 }
+async function addCategories(){
+    console.log('Deleting all categories');
+    let deleteAllCategories = await Category.deleteMany().exec();
+    console.log('All categories deleted. Creating new categories...');
+
+    let updateCategoryPromise = (categoryObj,subCategoryIds) => {
+        return new Promise((resolve,reject)=>{
+            Category.updateOne({_id: categoryObj._id},{$set: {hasSubCategory: true,subCategoryId: subCategoryIds}},{upsert: true}).exec().then((res)=>{
+                resolve({
+                    ...res
+                })
+            })
+        })
+    }
+    
+    let updateFaqCategory = (categoryObj,faqIds) => {
+        return new Promise((resolve,reject)=>{
+            Category.updateOne({_id: categoryObj._id},{$set: {faqId: faqIds}},{upsert: true}).exec().then((res)=>{
+                resolve({
+                    ...res
+                })
+            })
+        })
+    }
+    let categoriesGraph = createCategoriesGraph();
+    let rootCategory = new Category({
+        categoryName: 'root',
+        subCategoryId: [],
+        hasSubCategory: false,
+        faqId: [],
+    });
+    let rootSaved = await rootCategory.save();
+    let queue = [rootSaved];
+    while(queue.length != 0){
+        let s = queue.shift();
+        try{
+            let subCategories = categoriesGraph[s.categoryName];
+            let subCategoryIds = [];
+            for(const subCategory of subCategories){
+                let subCategoryObj = new Category({
+                    categoryName: subCategory,
+                    subCategoryId: [],
+                    hasSubCategory: false,
+                    faqId: [],
+                })
+                let subCategorySaved = await subCategoryObj.save();
+                queue.push(subCategorySaved);
+                subCategoryIds.push(subCategorySaved._id);
+            }
+            let appendSubCategoryIds = await updateCategoryPromise(s,subCategoryIds);
+        }
+        catch(err){
+            let faqsToBeLinked = await Faq.find({faqCategoryPath: s.categoryName}).exec();
+            faqsToBeLinked = faqsToBeLinked.map((faq)=>{
+                return faq._id
+            });
+            let appendFaqCategories = await updateFaqCategory(s,faqsToBeLinked);
+        }
+    }
+    console.log('All categories created...');
+    return true;
+}
+
 async function addUsers(){
     console.log('Deleting all the users in the user collection...');
     let deleteAllUsers = await User.deleteMany().exec();
     console.log('All users deleted. Total users size: '+userArr.length+'...Adding users');
 
     for(const user of userArr){
-        let faqsToBeLinked = await Faq.find({faqQuestionCategory: 'My Account'}).exec();
+        let faqsToBeLinked = await Faq.find({faqCategoryPath: 'My Account'}).exec();
         for(const faq of faqsToBeLinked){
             user.faqId.push(faq._id);
         }
@@ -39,7 +104,7 @@ async function addProducts(){
     let deleteAllProducts = await Product.deleteMany().exec();
     console.log('All products deleted..Creating new products of size: '+productArr.length);
     for(const product of productArr){
-        let productFaqs = await Faq.find({$and: [{faqQuestionCategory: 'Products'},{faqQuestionSubCategoryL1: product.productName}]}).exec();
+        let productFaqs = await Faq.find({faqCategoryPath: {$all: ['Products',product.productName]}}).exec();
         for(const faq of productFaqs){
             product.faqId.push(faq._id);
         }
@@ -67,16 +132,7 @@ async function addOrders(){
         if(i == allUsers.length){
             i=0;
         }
-        let faqsToBeLinked = await Faq.find(
-                                                {$and: [
-                                                    {faqQuestionCategory: 'Orders'},
-                                                    {faqQuestionSubCategoryL1: order.orderStatus},
-                                                    // {$or: [
-                                                    //         {faqQuestionSubCategoryL1: order.orderStatus},
-                                                    //         {faqQuestionSubCategoryL1: 'General'}
-                                                    //     ]
-                                                    // }
-                                                ]}).exec();
+        let faqsToBeLinked = await Faq.find({faqCategoryPath: {$all: ['Orders',order.orderStatus]}}).exec();
         for(const faq of faqsToBeLinked){
             order.faqId.push(faq._id);
         }
@@ -110,6 +166,7 @@ async function linkUsersToOrders(){
     return true;
 }
 exports.addFaqs = addFaqs;
+exports.addCategories = addCategories;
 exports.addUsers = addUsers;
 exports.addProducts = addProducts;
 exports.addOrders = addOrders;
