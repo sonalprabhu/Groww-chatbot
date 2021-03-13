@@ -1,7 +1,6 @@
 import { BrowserRouter, Link,Switch,Route,Redirect} from 'react-router-dom';
 import growwLogo from '../assets/groww-logo.png';
 import './App.css';
-import Categories from './Categories';
 
 export default function Header(props) {
 
@@ -25,15 +24,14 @@ export default function Header(props) {
 
     return (
       <div className="container-fluid main">
-       <BrowserRouter>
           <div className="row" style={{'min-height':'81px'}}>
           <div className="container web-align">
           <img src={growwLogo} alt="logo" height="40px" width="148px" offset="1000"/>
           <a className="mainLabel" href="#">Explore</a>
           <a className="mainLabel" href="#">Investments</a>
-           {props.user !== 'guest' && (<Link  to="/stocks" className="sideLabel">Orders</Link>)}
-            {props.user !== 'guest' && <Link to="/stocks" className="sideLabel side" >Account</Link> }
-            {props.user === 'guest' && <Link to="/stocks" className="sideLabel side" onClick={onLogIn}>Login</Link> }
+           {props.user !== 'guest' && (<Link  to="/orders" className="sideLabel">Orders</Link>)}
+            {props.user !== 'guest' && <Link to="/account" className="sideLabel side" >Account</Link> }
+            {props.user === 'guest' && <Link  className="sideLabel side" onClick={onLogIn}>Login</Link> }
 
           </div>
           </div>
@@ -43,16 +41,9 @@ export default function Header(props) {
           <Link to="/mutualfund" className="subLabel" onClick={onClick}>Mutual Funds</Link>
           <Link to="/fd" className="subLabel" onClick={onClick}>Fixed Deposits</Link>
           <Link to="/gold" className="subLabel" onClick={onClick}>Gold</Link>
-          <Redirect to="/stocks" from="/" />
           </div>
           </div>
-          <div className="container web-align wrapper">
-      <Switch> <Route path="/fd" render={()=> <Categories text="FD"/>} /> </Switch>
-      <Switch> <Route path="/gold" render={()=> <Categories text="Gold"/>}/></Switch>
-      <Switch> <Route path="/mutualfund" render={()=> <Categories text="Mutual Funds"/>} /></Switch>
-      <Switch> <Route exact path="/stocks" render={()=> <Categories text="Stocks"/>} /> </Switch>
-      </div>
-          </BrowserRouter>
+
       </div>
     );
    
