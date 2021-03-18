@@ -26,21 +26,30 @@ class ActionProvider {
     };
 
     handleQuestionClick = (selectedQuestion) =>{
-      const clientMessage=this.createClientMessage(selectedQuestion.QuestionText)
+      const clientMessage=this.createClientMessage(selectedQuestion.QuestionText);
+      this.updateChatbotStateWithClientMessage(clientMessage);
       axios.get(`http://localhost:8081/get-answer-by-questionId/${selectedQuestion.QuestionId}`)
       .then(res => {
         var ans = res.data.Answer;
-        var message = this.createChatBotMessage(ans)
-        this.updateChatbotState(message,clientMessage);
+        var msg=[];
+        for(let a in ans)
+        msg.push(this.createChatBotMessage(ans[a]));
+        this.updateChatbotStateWithBotMessage(msg);
       });
     
     }
 
-    updateChatbotState(message,clientMessage="") { 
+    updateChatbotStateWithClientMessage(clientMessage) { 
          this.setState(prevState => ({
-            ...prevState, messages: [...prevState.messages,clientMessage,message]
+            ...prevState, messages: [...prevState.messages,clientMessage]
           }))
         }
+
+    updateChatbotStateWithBotMessage(message) { 
+          this.setState(prevState => ({
+             ...prevState, messages: [...prevState.messages,...message]
+           }))
+         }
   }
   
   export default ActionProvider;

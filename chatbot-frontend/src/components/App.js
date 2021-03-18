@@ -13,17 +13,30 @@ import ProductPage from './ProductPage'
 import Orders from './Orders';
 import Account from './Account';
 import PrivateRoute from './PrivateRoute';
+import Login from './Login';
+import Logout from './Logout';
+import Cookies from "js-cookie";
 
 function App(props) {
 
   const [showBot, toggleBot] = useState(false);
-  const [user,setUser] =useState('guest');
+  const [user,setUser] =useState(Cookies.get('user'));
 
 function login()
 {
-  setUser('Sonal');
+  setUser(Cookies.get('user'));
   //create user in backend and get the userId
 }
+
+function logout(){
+  Cookies.set('user','guest');
+  setUser('guest');
+}
+
+useEffect(async () => {
+  if(!Cookies.get('user'))
+ Cookies.set('user','guest');
+}, []);
 
 
  const saveMessages = (messages) => {
@@ -58,13 +71,15 @@ const config={
 
   return (
     <div className="App">
-      <Header user={user} login={()=>login()} refreshChatbot={() =>toggleBot(false) }/>
+      <Header user={user} login={()=>login()} logout={() => logout()} refreshChatbot={() =>toggleBot(false) }/>
       <div className="container web-align wrapper">
           <Switch><Route path="/:product/:id" component={ProductPage }/>}/> </Switch> 
           <Switch> <Route exact path="/fd" render={()=> <Categories text="FD"/>} /> </Switch>
           <Switch> <Route exact path="/gold" render={()=> <Categories text="Gold"/>}/></Switch>
           <Switch> <Route exact path="/mutualfund" render={()=> <Categories text="Mutual Funds"/>} /></Switch>
           <Switch> <Route exact path="/stocks" component={()=> <Categories text="Stocks"/>} /> </Switch>
+          <Switch> <Route exact path="/login" component={Login} /> </Switch>
+          <Switch> <PrivateRoute exact path="/logout" isAuthenticated={user !== 'guest'} component={Logout} /> </Switch>
           <Switch> <PrivateRoute exact path="/orders" isAuthenticated={user !== 'guest'} component={Orders} /> </Switch>
           <Switch> <PrivateRoute exact path="/account" isAuthenticated={user !== 'guest'} component={Account} /> </Switch>
       </div>
