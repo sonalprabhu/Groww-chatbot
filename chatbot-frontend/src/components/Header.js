@@ -1,4 +1,4 @@
-import { BrowserRouter, Link,Switch,Route,Redirect} from 'react-router-dom';
+import { Link} from 'react-router-dom';
 import growwLogo from '../assets/groww-logo.png';
 import './App.css';
 
@@ -22,6 +22,12 @@ export default function Header(props) {
     props.login();
   }
 
+  function onLogOut(event)
+  {
+    props.refreshChatbot(event);
+    props.logout();
+  }
+
     return (
       <div className="container-fluid main">
           <div className="row" style={{'min-height':'81px'}}>
@@ -31,7 +37,8 @@ export default function Header(props) {
           <a className="mainLabel" href="#">Investments</a>
            {props.user !== 'guest' && (<Link  to="/orders" className="sideLabel">Orders</Link>)}
             {props.user !== 'guest' && <Link to="/account" className="sideLabel side" >Account</Link> }
-            {props.user === 'guest' && <Link  className="sideLabel side" onClick={onLogIn}>Login</Link> }
+            {props.user !== 'guest' && <Link  className="sideLabel side" to={{pathname:"/logout",aboutProps:{func:{onLogOut}}}}>Logout</Link> }
+            {props.user === 'guest' && <Link  className="sideLabel" to={{pathname:"/login",aboutProps:{func:{onLogIn}}}}>Login</Link> }
 
           </div>
           </div>
