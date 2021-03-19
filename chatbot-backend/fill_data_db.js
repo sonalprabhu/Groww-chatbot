@@ -12,7 +12,12 @@ async function addFaqs(){
     console.log('All faqs deleted. Total faq size '+faqArr.length+'...Adding faqs...');
 
     for(const faq of faqArr){
-        let faqObj = new Faq({...faq});
+        let faqObj = new Faq({
+            faqQuestionText: faq.faqQuestionText,
+            faqCategoryPath: faq.faqCategoryPath,
+            faqAnswerText: faq.faqAnswerText,
+            faqIsDynamic: faq.faqIsDynamic,
+        });
         let faqSaved = await faqObj.save();
         console.log('Faq saved with id: '+faqSaved._id);
     }

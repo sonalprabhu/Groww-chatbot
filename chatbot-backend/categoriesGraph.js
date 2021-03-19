@@ -39,6 +39,8 @@ function createCategoriesGraph(){
     }
     for(const productCategories of ['Heranba Industries','Vodafone Idea','ICICI Prudential Technology Direct Plan Growth','Tata Digital India Fund Direct Growth','Equitas 1 Year','Equitas 3 Months','Augmont Gold']){
         categoryGraph.addEdge('Products',productCategories);
+        categoryGraph.addEdge(productCategories,productCategories+' General');
+        categoryGraph.addEdge(productCategories,productCategories+' Previous Orders');
     }
     return categoryGraph.getGraph();
 }

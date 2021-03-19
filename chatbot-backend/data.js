@@ -1,3 +1,4 @@
+const {browseSimilarProducts,getCurrentStockHolding,checkAvailabilityPreviousOrders} = require('./dynamic_questions_handler');
 let faqArr = [
     {
         faqQuestionText: 'If I verify with TPIN, will it sell all my holdings?',
@@ -7,7 +8,8 @@ let faqArr = [
                         `We assure you that no sell order will be placed without your approval.`,
                         `Use the link below to verify your holdings`,
                         `https://groww.in/cdslauth`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null
     },
     {
         faqQuestionText: 'How will off market transactions show up in my holding?',
@@ -15,7 +17,8 @@ let faqArr = [
         faqAnswerText: ['Off market transactions will show up in your holdings after it reflects in your demat account.',
                         'It takes 2 working days after the transaction date to show up (T+2).',
                         'Please raise a ticket if it has been more than 2 days.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to invest in IPO?',
@@ -31,14 +34,16 @@ let faqArr = [
                         `Within 24 hours, you will get a UPI mandate request on your UPI app. Approve it.`,
                         `Note: The UPI mandate request may come instantly or may take up to 24 hours to come.`,
                     ],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'What is stocks margin?',
         faqCategoryPath: [`Stocks`,`Margin`],
         faqAnswerText: [`Margin is the money you borrow from Groww (broker) to trade in stocks.`,
                         `With the margin feature on Groww, you are able to buy stocks for as low as 15% of the total value of the stock.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'What are account maintainance charges?',
@@ -48,7 +53,8 @@ let faqArr = [
                         'On Groww, we do not have any AMC.',
                         'Go to the link below to view pricing on stocks.',
                         'https://groww.in/pricing/stocks'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How can I access my stocks P&L report?',
@@ -64,7 +70,8 @@ let faqArr = [
                         `Brokerage = Rs 20 or 0.05% per order (whichever is lower)`,
                         `Regulatory & statutory charges, penalties, and GST is extra and depends on the type of order.`,
                         `You can use the brokerage calculator to get an estimate of all the charges involved.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to start a SIP on Groww?',
@@ -77,7 +84,8 @@ let faqArr = [
                         `Don't forget to add Biller/OTM/AutoPay for future installments.`,
                         `Visit the link below to learn more about choosing mutual funds`,
                         `https://groww.in/blog/how-to-choose-mutual-funds-in-india/`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How do I pay for a missed installment?',
@@ -86,7 +94,8 @@ let faqArr = [
                         `Beside the mutual fund's name, you will see 'Invest' written. Click on it.`,
                         `Enter the amount and choose 'One-Time'`,
                         `Complete the payment.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How do I import my external mutual fund investments',
@@ -97,13 +106,15 @@ let faqArr = [
                         `Continue on with the next steps.`,
                         `Give permission to Groww to read your email. In 1-2 days, you will be able to see your external investments on the dashboard. Your imported investments will be updated every 30 days.`,
                         `Note: Groww does not have access to any of your emails except the ones that come from fonotreply@camsonline.com and samfS@kfintech.com. Groww can only read messages that are from CAMS and Karvy so as to be able to read the mutual funds statements.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'What is Digital Gold?',
         faqCategoryPath: ['Gold','About Digital Gold'],
         faqAnswerText: ['Digital Gold is a convenient and cost-effective way of purchasing gold online.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How do I buy Digital Gold on Groww?',
@@ -114,7 +125,8 @@ let faqArr = [
                         `Visit the link below to login and buy gold.`,
                         `https://groww.in/dashboard/explore/stocks`,
                     ],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How do I sell Digital Gold purchased on Groww?',
@@ -127,19 +139,22 @@ let faqArr = [
                         `Visit the link below to check your gold.`,
                         `https://groww.in/dashboard/investments/gold`,
                     ],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How is the storage of physical gold taking place?',
         faqCategoryPath: ['Gold','Gold Storage & Insurance'],
         faqAnswerText: [`The physical gold is stored by Augmont in 100% secured Sequel's vaults and insured (verified by an IDBI Trusteeship Service Pvt. Ltd. - an independent trustee).`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How many fixed deposits can I open?',
         faqCategoryPath: ['FDs','About FDs'],
         faqAnswerText: ['If your KYC is verified, you can open as many fixed deposits as you wish. However, till your KYC is under process, you can place only one order for opening a fixed deposit.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Why did my fixed deposit investment fail?',
@@ -147,7 +162,8 @@ let faqArr = [
         faqAnswerText: [`Your fixed deposit investment may fail due to incorrect/mismatched data in the KYC documents submitted resulting in KYC rejection or due to payment issues while booking the fixed deposit`,
                         `Please re-upload your documents or retry making the payment.`,
                         `If this is a recurring issue, please raise a ticket. We'll resolve this issue as soon as possible.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to get a TDS certificate for my fixed deposit?',
@@ -161,7 +177,8 @@ let faqArr = [
         faqAnswerText: [`Premature withdrawal of fixed deposits is not allowed for tax-saver deposits and monthly interest payout deposits.`,
                         `Any other type of fixed deposit can be withdrawn before maturity.`,
                         `Please refer to the 'FD Details' section of any fixed deposit for premature penalty information.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to change email address?',
@@ -170,7 +187,8 @@ let faqArr = [
                         'Visit the link below to raise a ticket and address the issue.',
                         'https://groww.in/user/help/tickets/create',
                     ],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'What are the documents required for getting my full KYC done?',
@@ -183,7 +201,8 @@ let faqArr = [
                         `Short 5 sec video of you holding your PAN card`,
                         `Visit the link below to proceed with uploading your documents.`,
                         `https://groww.in/onboarding/upload`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Can I invest using a credit/debit card?',
@@ -192,7 +211,8 @@ let faqArr = [
                         `SEBI rules say the investments should be made through verified bank accounts only.`,
                         `It is not possible to verify bank accounts when investments are made using a credit/debit card.`,
                         `You can use the either UPI apps (Google Pay,PhonePe,BHIM,etc), Net banking or NEFT/RTGS/IMPS`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to add money for Groww Balance?',
@@ -203,94 +223,158 @@ let faqArr = [
                         `Enter the amount you want to invest and tap 'Add Money'`,
                         `Then,complete the payment.`,
                         `The money will show in your Groww Balance.`],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Browse similar products?',
         faqCategoryPath: ['Orders','Completed'],
         faqAnswerText: [''],
-        faqIsDynamic: true
+        faqIsDynamic: true,
+        faqDynamicAnswer: browseSimilarProducts,
     },
     {
         faqQuestionText: 'How to cancel an order?',
         faqCategoryPath: ['Orders','Completed'],
         faqAnswerText: ['You can cancel the order before it goes in closed status.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Is there a penalty for cancellation?',
         faqCategoryPath: ['Orders','Completed'],
         faqAnswerText: ['No there is no penalty for order cancellation.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to place a buy order?',
         faqCategoryPath: ['Orders','Not completed'],
         faqAnswerText: ['Move to a specific category,select your product and press on buy.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to place a redeem order?',
         faqCategoryPath: ['Orders','Not completed'],
         faqAnswerText: ['Visit the link below',
                         'https://groww.in/blog/mutual-fund-redemption-what-is-it-and-how-to-redeem-fund-units/'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'How to do the payment of an order?',
         faqCategoryPath: ['Orders','General'],
         faqAnswerText: ['You can select any incompleted order and press on proceed to payment option.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Is it possible to get the cashback if my order gets stuck?',
         faqCategoryPath: ['Orders','General'],
         faqAnswerText: ['You will receive the refund amount in your bank account within 5-7 working days.'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'What is the stock value of Heranba Industries?',
-        faqCategoryPath: ['Products','Heranba Industries'],
+        faqCategoryPath: ['Products','Heranba Industries','Heranba Industries General'],
         faqAnswerText: ['National Stock Exchange (NSE): Rs 789.75' , 
                         'Bombay Stock Exchange (BSE): Rs 789.50'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you wish to see your current stock holding for Heranba Industries?',
+        faqCategoryPath: ['Products','Heranba Industries','Heranba Industries Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true,
+        faqDynamicAnswer: getCurrentStockHolding,
     },
     {
         faqQuestionText: 'What is the stock value of Vodafone Idea?',
-        faqCategoryPath: ['Products','Vodafone Idea'],
+        faqCategoryPath: ['Products','Vodafone Idea','Vodafone Idea General'],
         faqAnswerText: ['National Stock Exchange (NSE): Rs 10.30',
                         'Bombay Stock Exchange (BSE): Rs 10.31'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you wish to see your current stock holding for Vodafone Idea?',
+        faqCategoryPath: ['Products','Vodafone Idea','Vodafone Idea Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true,
+        faqDynamicAnswer: getCurrentStockHolding,
     },
     {
         faqQuestionText: 'What is the annual fund return value of ICICI Prudential Technology Direct Plan Growth?',
-        faqCategoryPath: ['Products','ICICI Prudential Technology Direct Plan Growth'],
+        faqCategoryPath: ['Products','ICICI Prudential Technology Direct Plan Growth','ICICI Prudential Technology Direct Plan Growth General'],
         faqAnswerText: ['99.86%'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you want to check whether you have ICICI Prudential Technology Direct Plan Growth compounding?',
+        faqCategoryPath: ['Products','ICICI Prudential Technology Direct Plan Growth','ICICI Prudential Technology Direct Plan Growth Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true,
+        faqDynamicAnswer: checkAvailabilityPreviousOrders //Function required.
     },
     {
         faqQuestionText: 'What is the monthly fund return value of Tata Digital India Fund Direct Growth?',
-        faqCategoryPath: ['Products','Tata Digital India Fund Direct Growth'],
+        faqCategoryPath: ['Products','Tata Digital India Fund Direct Growth','Tata Digital India Fund Direct Growth General'],
         faqAnswerText: ['49.29%'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you want to check whether you have any funds ordered for Tata Digital India Fund Direct Growth?',
+        faqCategoryPath: ['Products','Tata Digital India Fund Direct Growth','Tata Digital India Fund Direct Growth Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true,
+        faqDynamicAnswer: checkAvailabilityPreviousOrders //Function required
     },
     {
         faqQuestionText: 'What is the rate of interest for Equitas 1 Year FD?',
-        faqCategoryPath: ['Products','Equitas 1 Year'],
+        faqCategoryPath: ['Products','Equitas 1 Year','Equitas 1 Year General'],
         faqAnswerText: ['6.50%'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: checkAvailabilityPreviousOrders,
     },
     {
-        faqAuestionText: 'What is the premium withdrawal status for Equitas 3 months?',
-        faqCategoryPath: ['Products','Equitas 3 Months'],
+        faqQuestionText: 'Do you want to check whether you have Equitas 1 Year FD running?',
+        faqCategoryPath: ['Products','Equitas 1 Year','Equitas 1 Year Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true, 
+        faqDynamicAnswer: checkAvailabilityPreviousOrders, //Function required
+    },
+    {
+        faqQuestionText: 'What is the premium withdrawal status for Equitas 3 months?',
+        faqCategoryPath: ['Products','Equitas 3 Months','Equitas 3 Months General'],
         faqAnswerText: ['Premium withdrawal is available for Equitas 3 Months'],
-        faqIsDynamic: false //later will be dynamic to true
+        faqIsDynamic: false, //later will be dynamic to true
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you want to check whether you have ordered Equitas 3 Months previously?',
+        faqCategoryPath: ['Products','Equitas 3 Months','Equitas 3 Months Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true, 
+        faqDynamicAnswer: checkAvailabilityPreviousOrders, //Function required
     },
     {
         faqQuestionText: 'What is the purity value of Groww Digital Gold?',
-        faqCategoryPath: ['Products','Augmont Gold'],
+        faqCategoryPath: ['Products','Augmont Gold','Augmont Gold General'],
         faqAnswerText: ['Groww ensures 99.90% purity for Digital Gold'],
-        faqIsDynamic: false
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Do you want to check whether you have previously bought gold?',
+        faqCategoryPath: ['Products','Augmont Gold','Augmont Gold Previous Orders'],
+        faqAnswerText: [],
+        faqIsDynamic: true,
+        faqDynamicAnswer: checkAvailabilityPreviousOrders, //Function required
     },
 ]
 
