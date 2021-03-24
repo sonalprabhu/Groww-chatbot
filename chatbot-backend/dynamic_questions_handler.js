@@ -23,7 +23,7 @@ module.exports = {
         for(const order of userOrders){
             count += order.products.filter((pId)=>(pId.toString()===context.product)).length;
         }
-        return [`NSE: Rs.${count * product.productPrice.nse}`,`BSE: Rs.${count * product.productPrice.bse}`];
+        return [`NSE: Rs.${count * product.productPrice.stockPrice.nse}`,`BSE: Rs.${count * product.productPrice.stockPrice.bse}`];
     },
     checkAvailabilityPreviousOrders: async (context) => {
         const product = await Product.findById(context.product).exec();

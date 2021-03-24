@@ -131,6 +131,7 @@ async function addOrders(){
         let productsToBeLinked = await Product.find({productCategory: order.category}).exec();
         for(const product of productsToBeLinked){
             order.products.push(product._id);
+            break;
         }
         order.userId = allUsers[i]._id;
         i++;

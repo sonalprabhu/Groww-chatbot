@@ -13,20 +13,24 @@ const productFDSchema = new Schema({ //only eligible for FDs
     minAmount: {type: String},
     compounding: {type: String},
     prematureWithdrawal: {type: String},
-})
-const priceSchema = new Schema({
+});
+const stockPriceSchema = new Schema({
     nse: {type: String},
     bse: {type: String},
+})
+
+const priceSchema = new Schema({
+    stockPrice: {type: stockPriceSchema},
     fundReturns: {type: productReturnsSchema},
     fd: {type: productFDSchema},
     purity: {type: String},//only for gold
-})
+});
 
 const productSchema = new Schema({
     productCategory: {type: String},
     productPrice: {type: priceSchema},
     productName: {type: String},
     faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],
-})
+});
 
 exports.Product = mongoose.model('Product',productSchema,'products');

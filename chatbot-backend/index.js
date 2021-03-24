@@ -55,6 +55,79 @@ async function fetchUserKycFaqs(userId){
     }
 }
 
+function productResponseMap(products,category){//all response mappers will be in a different file.
+    let filteredProducts = (products instanceof Array)?[]:{};
+    switch(category){
+        case 'Stocks':
+            {
+                if(products instanceof Array){
+                    filteredProducts = products.map((p)=>{
+                        const {faqId,productPrice,...fp} = p;
+                        const {_id,...productPriceExceptId} = p.productPrice.stockPrice;
+                        return {...fp,productPrice: {stockPrice: productPriceExceptId}} 
+                    });
+                }
+                else{
+                    const {faqId,productPrice,...fp} = products;
+                    const {_id,...productPriceExceptId} = products.productPrice.stockPrice;
+                    filteredProducts = {...fp,productPrice: {stockPrice: productPriceExceptId}};
+                }  
+            };
+            break;
+        case 'Mutual Funds':
+            {
+                if(products instanceof Array){
+                    filteredProducts = products.map((p)=>{
+                        const {faqId,productPrice,...fp} = p;
+                        const {_id,...productPriceExceptId} = p.productPrice.fundReturns;
+                        return {...fp,productPrice: {fundReturns: productPriceExceptId}};
+                    }); 
+                }
+                else{
+                    const {faqId,productPrice,...fp} = products;
+                    const {_id,...productPriceExceptId} = products.productPrice.fundReturns;
+                    filteredProducts = {...fp,productPrice: {fundReturns: productPriceExceptId}};
+                } 
+            };
+            break;
+        case 'FDs':
+            {
+                if(products instanceof Array){
+                    filteredProducts = products.map((p)=>{
+                        const {faqId,productPrice,...fp} = p;
+                        const {_id,...productPriceExceptId} = p.productPrice.fd;
+                        return {...fp,productPrice: {fd: productPriceExceptId}}
+                    });
+                }
+                else{
+                    const {faqId,productPrice,...fp} = products;
+                    const {_id,...productPriceExceptId} = products.productPrice.fd;
+                    filteredProducts = {...fp,productPrice: {fd: productPriceExceptId}};
+                }  
+            };
+            break;
+        case 'Gold':
+            {
+                if(products instanceof Array){
+                    filteredProducts = products.map((p)=>{
+                        const {faqId,productPrice,...fp} = p;
+                        return {...fp,productPrice: {purity: p.productPrice.purity}};
+                    });
+                }
+                else{
+                    const {faqId,productPrice,...fp} = products;
+                    filteredProducts = {...fp,productPrice: {purity: p.productPrice.purity}};
+                } 
+            };
+            break;
+        default:
+            {
+                //do nothing  
+            }
+    }
+    return filteredProducts;
+}
+
 app.get('/',()=>{
     console.log('Welcome to Groww pilot backend');
 });
@@ -131,8 +204,9 @@ app.get('/getAllProducts',async (req,res)=>{
     let category = req.query.category;
     try{
         let products = await Product.find({productCategory: category}).exec();
+        products = products.map((p)=>p.toJSON());
         if(products !== null && products !== undefined && products.length !==0){
-            res.status(200).json(products);//need more control on which fields should be returned
+            res.status(200).json(productResponseMap(products,category));
         }
         else{
             res.sendStatus(404);
@@ -147,8 +221,9 @@ app.get('/getProductDetails/:productId',async (req,res)=>{
     let productId = req.params.productId;
     try{
         let product = await Product.findById(productId).exec();
+        product= product.toJSON();
         if(product !== null && product !== undefined){
-            res.status(200).json(product);//need to filter about the fields to be returned
+            res.status(200).json(productResponseMap(product,product.productCategory));
         }
         else{
             res.sendStatus(404);

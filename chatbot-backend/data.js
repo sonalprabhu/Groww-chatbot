@@ -382,8 +382,10 @@ let productArr = [
     {
         productCategory: 'Stocks',
         productPrice: {
-                nse: '812.60',
-                bse: '812.25',
+                stockPrice: {
+                    nse: '812.60',
+                    bse: '812.25',
+                },
                 fundReturns: {
                     sixMonths: null,
                     oneYear: null,
@@ -405,8 +407,10 @@ let productArr = [
     {
         productCategory: 'Stocks',
         productPrice: {
-                nse: '10.55',
-                bse: '10.55',
+                stockPrice: {
+                    nse: '10.55',
+                    bse: '10.55',
+                },
                 fundReturns: {
                     sixMonths: null,
                     oneYear: null,
@@ -428,8 +432,10 @@ let productArr = [
     {
         productCategory: 'Mutual Funds',
         productPrice: {
-                nse: null,
-                bse: null,
+                stockPrice: {
+                    nse: null,
+                    bse: null,
+                },
                 fundReturns: {
                     sixMonths: '45.04%',
                     oneYear: '81.52%',
@@ -451,8 +457,10 @@ let productArr = [
     {
         productCategory: 'Mutual Funds',
         productPrice: {
-                nse: null,
-                bse: null,
+                stockPrice: {
+                    nse: null,
+                    bse: null,
+                },
                 fundReturns: {
                     sixMonths: '46.23%',
                     oneYear: '65.57%',
@@ -474,8 +482,10 @@ let productArr = [
     {
         productCategory: 'FDs',
         productPrice: {
-                nse: null,
-                bse: null,
+                stockPrice: {
+                    nse: null,
+                    bse: null,
+                },
                 fundReturns: {
                     sixMonths: null,
                     oneYear: null,
@@ -497,8 +507,10 @@ let productArr = [
     {
         productCategory: 'FDs',
         productPrice: {
-                nse: null,
-                bse: null,
+                stockPrice: {
+                    nse: null,
+                    bse: null,
+                },
                 fundReturns: {
                     sixMonths: null,
                     oneYear: null,
@@ -520,8 +532,10 @@ let productArr = [
     {
         productCategory: 'Gold',
         productPrice: {
-                nse: null,
-                bse: null,
+                stockPrice: {
+                    nse: null,
+                    bse: null,
+                },
                 fundReturns: {
                     sixMonths: null,
                     oneYear: null,
