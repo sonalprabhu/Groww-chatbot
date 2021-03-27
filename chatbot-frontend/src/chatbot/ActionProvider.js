@@ -26,6 +26,30 @@ class ActionProvider {
       this.updateChatbotState(message,clientMessage);
     };
 
+    handleCategoryClick = (option) =>{
+      const clientMessage=this.createClientMessage(option.Name);
+      Cookies.set('categoryId',option.categoryId);
+      this.updateChatbotStateWithClientMessage(clientMessage); 
+      const message = this.createChatBotMessage("",
+      {
+      widget: "faqSubCategory" }); 
+      this.updateChatbotState(message);
+    }
+
+    handleMoreQuestionsClick = () => {
+      const clientMessage=this.createClientMessage("I have more queries");
+      this.updateChatbotStateWithClientMessage(clientMessage); 
+      const message = this.createChatBotMessage(
+        `These are our available categories`,
+        {
+          widget: "FullFAQ",
+        }
+      ); 
+      this.updateChatbotState(message);
+     
+    }
+    
+
     handleQuestionClick = (selectedQuestion) =>{
       const clientMessage=this.createClientMessage(selectedQuestion.QuestionText);
       this.updateChatbotStateWithClientMessage(clientMessage);
@@ -78,6 +102,11 @@ class ActionProvider {
              ...prevState, messages: [...prevState.messages,...message]
            }))
          }
+    updateChatbotState(message){
+      this.setState(prevState => ({
+        ...prevState, messages: [...prevState.messages,message]
+      }))
+    }
   }
   
   export default ActionProvider;

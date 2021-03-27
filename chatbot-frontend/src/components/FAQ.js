@@ -93,6 +93,13 @@ export default function FAQ(props) {
           {option.QuestionText}
         </button>
       ));
+      optionsMarkup.push(<button
+        className="learning-option-button"
+        key="1"
+        onClick={()=>props.actionProvider.handleMoreQuestionsClick()}
+      >
+        {"Have more queries?"}
+      </button>)
     
       return(
         <div className="learning-options-container">
