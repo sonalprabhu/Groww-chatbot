@@ -126,7 +126,7 @@ function productResponseMap(products,category){//all response mappers will be in
                 }
                 else{
                     const {faqId,productPrice,...fp} = products;
-                    filteredProducts = {...fp,productPrice: {purity: p.productPrice.purity}};
+                    filteredProducts = {...fp,productPrice: {purity: productPrice.purity}};
                 } 
             };
             break;
@@ -233,6 +233,7 @@ app.get('/getProductDetails/:productId',async (req,res)=>{
         let product = await Product.findById(productId).exec();
         product= product.toJSON();
         if(product !== null && product !== undefined){
+            //console.log(productResponseMap(product,product.productCategory));
             res.status(200).json(productResponseMap(product,product.productCategory));
         }
         else{
