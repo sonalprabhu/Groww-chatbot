@@ -1,16 +1,22 @@
-import { useState,useEffect } from 'react';
-import Cookies from 'js-cookie';
+import { useEffect } from 'react';
+import {userService} from '../services/user.service';
+import { useDispatch } from 'react-redux';
+import { logout } from '../app/reducers/authReducer';
+import SubHeader from './SubHeader';
 
 function Logout(props) {
+  const dispatch = useDispatch()
     useEffect(
       async e => {
-       
-        props.location.aboutProps.func.onLogOut(e);
-        props.history.push("/login");
+        userService.logout()
+        .then((response)=>{
+          dispatch(logout())
+          props.history.push("/login");
+        })
       },
     );
   
-    return <div>Logging out!</div>;
+    return <div className="container web-align wrapper"><SubHeader/>Logging out!</div>;
   };
 
   export default Logout;

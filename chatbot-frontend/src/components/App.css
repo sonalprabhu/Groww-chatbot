@@ -1,7 +1,8 @@
 .chatbot{
   position: fixed;
     bottom:50px;
-    right:40px;  
+    right:40px; 
+    width:800px; 
 }
 
 .bot-btn{
@@ -142,4 +143,57 @@ a:hover{
   background: transparent;
   border: 1px solid green;
   margin: 3px;
+}
+.leftBox{
+  width: 200px;
+  padding: 0 0 30px;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px 0 rgba(0,0,0,0.1);
+  float:left;
+}
+
+.rightBox{
+  width: 500px;
+  padding: 30px 10px;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px 0 rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction:column;
+  float:right;
+  align-items: flex-start
+}
+
+.circle{
+  border-radius:50%;
+}
+
+.profilePic{
+  width: 100px;
+  height: 100px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.account-wrapper{
+  display: flex; 
+  align-items: center; 
+  height: 190px;
+  flex-direction: column; 
+  justify-content: space-around ; 
+  
+}
+
+.account-section{
+  display:flex;
+  flex-direction: row;
+  justify-content: space-around ; 
+}
+
+.label{
+  font-size: 13px;
+  letter-spacing: .25px;
+  color:#999;
+  text-align: left;
+}
+
+.label-value{
+  border-bottom: 1px solid rgba(0,0,0,0.1);
 }

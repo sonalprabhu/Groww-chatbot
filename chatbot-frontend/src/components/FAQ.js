@@ -1,6 +1,7 @@
 import './App.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { useSelector} from 'react-redux'
 
 export default function FAQ(props) {
   var mapper={
@@ -11,43 +12,21 @@ export default function FAQ(props) {
   }
     const currentLoc = window.location.pathname;
     const [options,setOptions]=useState([]);
+    const userId=useSelector(state=>state.users.userId.value)
    
 
     useEffect(async () => {
       const products = ['Stocks','FDs','Gold','Mutual Funds'];
-      var userId;
-      if(props.user == 'guest')
-        userId = null;
-      else
-      userId ="604a5406f9fce44e70ed0f94";  //Sample user Id from database used for time being
       var context = currentLoc.split('/');
       var contextLength = context.length;
-      var categoryName;
+      var categoryName,questions;
       var mainCategory = context[contextLength-1];
       if(contextLength === 2)
       {
         if(products.indexOf(mapper[context[contextLength-1]]) > -1 )
         {
           categoryName = mapper[context[contextLength-1]];
-          var questions = await axios.get(`http://localhost:8081/search-on-category`,{ params: { categoryName:categoryName} })
-          .then(res => {
-            return res.data;
-          });
-          setOptions(questions);
-
-        }
-        else if(mainCategory=='orders' && props.user!='guest')
-        {
-          var questions = await axios.get(`http://localhost:8081/user-specific-order-details`,{ params: { user:userId} })
-          .then(res => {
-            return res.data;
-          });
-          setOptions(questions);
-
-        }
-        else if(mainCategory=='account' && props.user!='guest')
-        {
-          var questions = await axios.get(`http://localhost:8081/user-account-questions`,{ params: { user:userId} })
+          questions = await axios.get(`http://localhost:8081/search-on-category`,{ params: { categoryName:categoryName,user:props.userId} })
           .then(res => {
             return res.data;
           });
@@ -57,24 +36,47 @@ export default function FAQ(props) {
       else if(contextLength === 3)
       {
         var orderId;
-        var productId="604a5406f9fce44e70ed0f97";
-        mainCategory = mapper[context[contextLength-2]]
-        if(products.indexOf(mapper[context[contextLength-2]]) > -1 )
+        if(mainCategory === 'account' && props.user !== 'guest')
         {
-          var questions = await axios.get(`http://localhost:8081/product-specific-questions`,{ params: { product:productId,user:userId} })
+          questions = await axios.get(`http://localhost:8081/user-account-questions`,{ params: { user:props.userId} })
+          .then(res => {
+            return res.data;
+          });
+          setOptions(questions);
+        } 
+        else if(products.indexOf(mapper[context[contextLength-2]]) > -1 )
+        {
+          var productId=context[contextLength-1];
+          questions = await axios.get(`http://localhost:8081/product-specific-questions`,{ params: { product:productId,user:props.userId} })
           .then(res => {
             return res.data;
           });
           setOptions(questions);
         }
-        else if(mainCategory === 'orders')
+      }
+      else if(contextLength === 4){
+        mainCategory = context[contextLength-2]
+        if(mainCategory === 'orders' && props.user!== 'guest')
         {
-          var questions = await axios.get(`http://localhost:8081/order-specific-questions`,{ params: { order: orderId,user:userId} })
+          questions = await axios.get(`http://localhost:8081/user-specific-order-details`,{ params: { user:props.userId} })
           .then(res => {
             return res.data;
           });
           setOptions(questions);
+
         }
+      }
+      else if(contextLength === 5){
+        mainCategory = context[2];
+        var orderId = context[contextLength-1];
+        if(mainCategory === 'orders')
+        {
+          questions = await axios.get(`http://localhost:8081/order-specific-questions`,{ params: { order: orderId,user:props.userId} })
+          .then(res => {
+            return res.data;
+          });
+          setOptions(questions);
+        } 
       }
   
       
