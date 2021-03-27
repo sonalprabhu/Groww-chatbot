@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import './App.css'
 import axios from 'axios';
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import {close} from '../app/reducers/chatbotToggle';
 import SubHeader from './SubHeader';
 import {  Link} from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
 
 export default function Orders(props) {
+    const dispatch = useDispatch()
     const [orders,setOrders] = useState([]);
     const userId=useSelector(state => state.users.userId)
     var mapper={
@@ -35,7 +38,7 @@ export default function Orders(props) {
       .then(res => {
         return res.data;
       })
-      .catch((err)=>[]);
+      .catch((err)=>[]);        
         setOrders(order);
     }
     fetchData();
@@ -45,17 +48,20 @@ export default function Orders(props) {
         <div>
         <SubHeader link="/dashboard/orders" onClick={tabClicked}/>
         <div className="container-fluid web-align wrapper">
-        <div className="row d-flex justify-content-center">
+        <div className="row justify-content-center">
         {orders.length==0 && <div className="item-card">No Orders in this category</div>}
         {orders.map((order)=>{
             return(
                 <Link to={{
                     pathname:"/dashboard/orders/"+props.location.pathname.split('/')[3]+'/'+order._id
-                }}  className="clickable" key={order._id}>
-            <div className="item-card">
-             <div >{order.productName||"This is a product name"} </div>
-             <div >{order.productPrice ||10000} </div>
-             <div >{order.orderDate} </div>
+                }}  className="clickable" key={order._id} onClick={()=>dispatch(close())}>
+            <div className="order-card col-12" key={order._id}>
+            <div className="order-date">{order.orderDate} </div>
+            <div className="order-details">
+             <div className="order-name">{order.productName||"This is a product name"} </div>
+             <div className="item-price">₹{order.productPrice ||10000} </div>
+             <Button className="order-status">{order.orderStatus} </Button>
+             </div>
              </div>
              </Link>
             );

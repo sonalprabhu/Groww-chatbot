@@ -18,12 +18,20 @@ export default function SubHeader(props) {
     goldRoute = props.link + goldRoute;
     fdRoute = props.link + fdRoute;
   }
+  if(props.remove)
+  removeClass()
 
   function changeClass(event){
     var selected=document.querySelector(".selected-option");
+    if(selected)
     selected.classList.remove("selected-option");
     var ele=event.target;
     ele.classList.add("selected-option");
+  }
+  function removeClass(){
+    var selected=document.querySelector(".selected-option");
+    if(selected)
+    selected.classList.remove("selected-option");
   }
 
   function onClick(event,route){

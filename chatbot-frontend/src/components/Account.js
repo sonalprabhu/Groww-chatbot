@@ -25,7 +25,7 @@ export default function Account(props) {
 
     return (
         <div>
-        <SubHeader/>
+        <SubHeader remove={true}/>
         <div className="container web-align wrapper">
         <div className="account-section">
             <div className="leftBox">

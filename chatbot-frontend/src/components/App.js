@@ -17,9 +17,11 @@ import PrivateRoute from './PrivateRoute';
 import Login from './Login';
 import Logout from './Logout';
 import { useSelector, useDispatch } from 'react-redux'
-import { changeState } from '../app/reducers/chatbotToggle'
+import {close, changeState } from '../app/reducers/chatbotToggle'
 import {connect} from 'react-redux';
 import OrderPage from './OrderPage';
+import FullFAQ from './FullFAQ';
+import FAQSubCategory from './FAQSubCategory';
 
 function App(props) {
   const userName=useSelector(state=>state.users.user.value);
@@ -39,6 +41,7 @@ function App(props) {
   checkAuth()
 
 useEffect( () => {
+  
     if(props)
     {
       setUser({userName:props.user.user,userId:props.user.userId})
@@ -47,6 +50,9 @@ useEffect( () => {
 
 
  const saveMessages = (messages) => {
+  //  console.log("These messages were already present")
+  //  if(JSON.parse(localStorage.getItem("chat_messages")))
+  //  console.log(JSON.parse(localStorage.getItem("chat_messages")))
   localStorage.setItem("chat_messages", JSON.stringify(messages));
 };
 
@@ -66,14 +72,27 @@ const config={
         backgroundColor: "#00d09c",
       },
     },
+    customComponents: {
+     header: () => <div className="react-chatbot-kit-chat-header">Groww Chatbot Assistant</div>
+    },
     widgets: [
       {
         widgetName: "FAQ",
        widgetFunc: (props) => <FAQ {...props} />,
        props: {user:userName,userId:user.userId}
+      },
+      {
+        widgetName:"FullFAQ",
+        widgetFunc: (props) => <FullFAQ {...props} />,
+      },
+      {
+        widgetName:"faqSubCategory",
+        widgetFunc: (props) => <FAQSubCategory {...props} />,
       }
   ],
-}
+};
+
+
 
 
   return (
@@ -93,7 +112,9 @@ const config={
       <div className="chatbot">
       {isOpen && ( 
       <Chatbot config={config} 
-      actionProvider={ActionProvider} messageParser={MessageParser} state={userId}/>)}
+      actionProvider={ActionProvider} messageParser={MessageParser} 
+      // saveMessages={saveMessages} messageHistory={loadMessages()}
+      />)}
       </div>       
       <Button className="bot-btn" onClick={() => dispatch(changeState())}>&nbsp;</Button>
 
