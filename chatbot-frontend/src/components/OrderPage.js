@@ -4,6 +4,7 @@ import './App.css'
 import axios from 'axios';
 import { useSelector} from 'react-redux'
 import SubHeader from './SubHeader';
+import Button from 'react-bootstrap/Button';
 
 export default function OrderPage(props) {
     const [order,setOrder] = useState([]);
@@ -27,10 +28,13 @@ export default function OrderPage(props) {
         <SubHeader/>
         <div className="container web-align wrapper">
         <div className="row d-flex justify-content-center">
-            <div className="item-card order-card">
-             <div >{order.productName||"This is a product name"} </div>
-             <div >{order.productPrice ||10000} </div>
-             <div >{order.orderDate} </div>
+        <div className="order-card col-12" key={order._id}>
+            <div className="order-date">{order.orderDate} </div>
+            <div className="order-details">
+             <div className="order-name">{order.productName||"This is a product name"} </div>
+             <div className="item-price">₹{order.productPrice ||10000} </div>
+             <Button className="order-status">{order.orderStatus} </Button>
+             </div>
              </div>
         </div>
         </div>
