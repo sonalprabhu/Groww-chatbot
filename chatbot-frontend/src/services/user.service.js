@@ -10,7 +10,7 @@ async function login(name,password){
     userPass: password
     }},{withCredentials:true})
     .then((response) => {
-    var inFifteenMinutes = new Date(new Date().getTime() + 15 * 60 * 1000);
+    var inFifteenMinutes = new Date(new Date().getTime() + 20 * 60 * 1000);
     Cookies.set('user',response.data.userName,{expires:inFifteenMinutes});
     Cookies.set('userId',response.data.userId,{expires:inFifteenMinutes});
     return response;

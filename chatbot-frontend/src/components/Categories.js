@@ -48,7 +48,7 @@ function Categories(props) {
                    <div className="item-card col-4" key={item._id}>
                        {(props.text === 'Stocks' || props.text === 'Mutual Funds')  && <img src="https://assets-netstorage.groww.in/stock-assets/logos/INE397D01024.png" alt="Product" width="36" height="36"/>}
                        <div className="item-name">{item.productName}</div>
-                       {(props.text === 'Stocks') && <div className="item-price">₹{item.productPrice.bse}</div>}
+                       {(props.text === 'Stocks') && <div className="item-price">₹{item.productPrice.stockPrice.bse}</div>}
                        {(props.text === 'Mutual Funds') && <div className="price-change">{item.productPrice.fundReturns.threeYear} (3Y)</div>}
                        {(props.text === 'Stocks') && <div className="price-change">5.90(1.2%)</div>}
                    </div>}

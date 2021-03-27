@@ -28,7 +28,7 @@ export default function ProductPage(props) {
                    <div className="item-card col-4" key={product._id}>
                        {(product.productCategory === 'Stocks' || product.productCategory === 'Mutual Funds')  && <img src="https://assets-netstorage.groww.in/stock-assets/logos/INE397D01024.png" alt="Product" width="36" height="36"/>}
                        <div className="item-name">{product.productName}</div>
-                       {(product.productCategory === 'Stocks') && <div className="item-price">₹{product.productPrice.bse}</div>}
+                       {(product.productCategory === 'Stocks') && <div className="item-price">₹{product.productPrice.stockPrice.bse}</div>}
                        {(product.productCategory === 'Mutual Funds') && <div className="price-change">{product.productPrice.fundReturns.threeYear} (3Y)</div>}
                        {(product.productCategory === 'Stocks') && <div className="price-change">5.90(1.2%)</div>}
                    </div>}
