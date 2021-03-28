@@ -339,7 +339,7 @@ let faqArr = [
         faqCategoryPath: ['Products','Equitas 1 Year','Equitas 1 Year General'],
         faqAnswerText: ['6.50%'],
         faqIsDynamic: false, //later will be dynamic to true
-        faqDynamicAnswer: checkAvailabilityPreviousOrders,
+        faqDynamicAnswer: null,
     },
     {
         faqQuestionText: 'Do you want to check whether you have Equitas 1 Year FD running?',

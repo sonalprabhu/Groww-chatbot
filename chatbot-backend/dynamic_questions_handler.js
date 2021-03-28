@@ -27,16 +27,27 @@ module.exports = {
     },
     checkAvailabilityPreviousOrders: async (context) => {
         const product = await Product.findById(context.product).exec();
-        const userOrders = await Order.find({$and: [{userId: context.user},{orderStatus: 'Completed'}]}).exec();
-        let availability = false;
+        const userOrders = await Order.find().exec();
+        //const userOrders = await Order.find({$and: [{userId: context.user},{orderStatus: 'Completed'}]}).exec();
+        let countAvailability = 0;
+        let countAvailabilityIncompleteStatus = 0;
         for(const order of userOrders){
             if(order.products.filter((pId)=>(pId.toString()===context.product)).length !== 0){
-                availability = true;
-                break;
+                if(order.userId.toString() === context.user.toString())
+                {
+                    if(order.orderStatus === 'Completed'){
+                        countAvailability++;
+                    }
+                    else{
+                        countAvailabilityIncompleteStatus++;
+                    } 
+                }
             }
         }
-        if(availability)
-            return [`Yes! you have already ordered for ${product.productName}`];
-        return [`No! you don't have any previous orders for ${product.productName}`];
+        if(countAvailability>0)
+            return [`Yes! you have already ordered for ${product.productName}.`,`You have ${countAvailability} such orders.`];
+        if(countAvailabilityIncompleteStatus>0)
+            return [`No! you don't have any previously completed orders for ${product.productName}.`,`You have ${countAvailabilityIncompleteStatus} incompleted orders for this product.`,`Move to orders page to complete your order soon!`];
+        return [`Sorry! you haven't used ${product.productName} ${product.productCategory} previously.`,`Buy the product to get more benefits.`]
     }
 }
