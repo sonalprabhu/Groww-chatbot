@@ -2,6 +2,7 @@ import './App.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useSelector} from 'react-redux'
+import Cookies from "js-cookie";
 
 export default function FullFAQ(props) {
 
@@ -11,29 +12,36 @@ export default function FullFAQ(props) {
    
 
     useEffect(async () => {
-        var queryParams ={};
+      var queryParams ={};
         if(userId!== '')
         queryParams.user = userId;
+        var categoryId=Cookies.get('categoryId');
+        if(categoryId)
+        queryParams.id=categoryId;
           var questions = await axios.get(`http://localhost:8081/get-all-categories`,{params:queryParams})
           .then(res => {
             return res.data;
           });
           setOptions(questions);
+          Cookies.remove('categoryId')
        
       
   }, []); 
   
 
   
-      const optionsMarkup = options.map((option) => (
+      const optionsMarkup = options.map((option) => {
+      return(
         <button
           className="learning-option-button"
           key={option.categoryId}
-          onClick={()=>props.actionProvider.handleCategoryClick(option)}
+          onClick={()=>{if(option.hasSubCategory) props.actionProvider.handleCategoryClick(option);
+            else if(option.hasSubCategory === false) props.actionProvider.handleCategoryQuestionClick(option);
+          else props.actionProvider.handleCategoryClick(option);}}
         >
           {option.Name}
         </button>
-      ));
+      )});
     
       return(
         <div className="learning-options-container">

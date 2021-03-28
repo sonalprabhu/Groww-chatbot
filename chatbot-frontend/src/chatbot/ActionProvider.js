@@ -30,9 +30,9 @@ class ActionProvider {
       const clientMessage=this.createClientMessage(option.Name);
       Cookies.set('categoryId',option.categoryId);
       this.updateChatbotStateWithClientMessage(clientMessage); 
-      const message = this.createChatBotMessage("",
+      const message = this.createChatBotMessage("These are some more categories",
       {
-      widget: "faqSubCategory" }); 
+      widget: "FullFAQ" }); 
       this.updateChatbotState(message);
     }
 
@@ -40,13 +40,23 @@ class ActionProvider {
       const clientMessage=this.createClientMessage("I have more queries");
       this.updateChatbotStateWithClientMessage(clientMessage); 
       const message = this.createChatBotMessage(
-        `These are our available categories`,
+        `Feel free to explore our wide category list`,
         {
           widget: "FullFAQ",
         }
       ); 
       this.updateChatbotState(message);
      
+    }
+
+    handleCategoryQuestionClick =(category) =>{
+      const clientMessage=this.createClientMessage(category.Name);
+      Cookies.set('categoryId',category.categoryId);
+      this.updateChatbotStateWithClientMessage(clientMessage); 
+      const message = this.createChatBotMessage("These are the questions under this category",
+      {
+      widget: "faqSubCategory" }); 
+      this.updateChatbotState(message);
     }
     
 

@@ -291,3 +291,7 @@ a:hover{
   background-color: #00d09c;
     border-color: #fdfdfd;
 }
+
+.row{
+  margin:0px !important;
+}

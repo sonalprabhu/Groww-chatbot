@@ -21,7 +21,7 @@ import {close, changeState } from '../app/reducers/chatbotToggle'
 import {connect} from 'react-redux';
 import OrderPage from './OrderPage';
 import FullFAQ from './FullFAQ';
-import FAQSubCategory from './FAQSubCategory';
+import CategorySubQuestions from './CategorySubQuestion';
 
 function App(props) {
   const userName=useSelector(state=>state.users.user.value);
@@ -87,7 +87,7 @@ const config={
       },
       {
         widgetName:"faqSubCategory",
-        widgetFunc: (props) => <FAQSubCategory {...props} />,
+        widgetFunc: (props) => <CategorySubQuestions {...props} />,
       }
   ],
 };
@@ -108,6 +108,7 @@ const config={
           <Switch> <PrivateRoute path={["/dashboard/orders/stocks/:id","/dashboard/orders/mutualfund/:id","/dashboard/orders/fd/:id","/dashboard/orders/gold/:id"]} isAuthenticated={isLogIn === true} component={OrderPage} /> </Switch>
           <Switch> <PrivateRoute exact path={["/dashboard/orders/stocks","/dashboard/orders/mutualfund","/dashboard/orders/fd","/dashboard/orders/gold"]} isAuthenticated={isLogIn === true} component={Orders} /> </Switch>
           <Switch> <PrivateRoute exact path="/dashboard/account" isAuthenticated={isLogIn === true} component={Account} /> </Switch> 
+          <Redirect to="/stocks" from="/" />
 
       <div className="chatbot">
       {isOpen && ( 
