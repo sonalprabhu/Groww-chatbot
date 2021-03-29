@@ -248,17 +248,35 @@ let faqArr = [
         faqDynamicAnswer: null,
     },
     {
-        faqQuestionText: 'How to place a buy order?',
-        faqCategoryPath: ['Orders','Not completed'],
-        faqAnswerText: ['Move to a specific category,select your product and press on buy.'],
+        faqQuestionText: 'How long does cancellation take?',
+        faqCategoryPath: ['Orders','Cancelled'],
+        faqAnswerText: ['Cancellation may take upto 6-7 hours after confirming cancel within 30 minutes of placing order.',
+                        'For specific queries raise a ticket.'],
         faqIsDynamic: false,
         faqDynamicAnswer: null,
     },
     {
-        faqQuestionText: 'How to place a redeem order?',
-        faqCategoryPath: ['Orders','Not completed'],
-        faqAnswerText: ['Visit the link below',
-                        'https://groww.in/blog/mutual-fund-redemption-what-is-it-and-how-to-redeem-fund-units/'],
+        faqQuestionText: 'How to cancel an order?',
+        faqCategoryPath: ['Orders','Cancelled'],
+        faqAnswerText: ['You cancel your order by moving to individual orders page, click on cancel and press ok to confirm cancel your order.',
+                        'Note: You cannot replace the same order after you cancel a particular order.',],
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'How to place a pending order?',
+        faqCategoryPath: ['Orders','Pending'],
+        faqAnswerText: ['Move to your specific order page which is in pending status.',
+                        'Press complete order.',
+                        'Complete the payment and place your order',
+                        'If your order is still in pending status, raise a ticket.'],
+        faqIsDynamic: false,
+        faqDynamicAnswer: null,
+    },
+    {
+        faqQuestionText: 'Can I cancel a pending order?',
+        faqCategoryPath: ['Orders','Pending'],
+        faqAnswerText: ['You can cancel a pending order by moving to the orders page and press on cancel and ok to confirm'],
         faqIsDynamic: false,
         faqDynamicAnswer: null,
     },
@@ -566,7 +584,7 @@ let ordersArr = [
         faqId: [],
     },
     {
-        orderStatus: 'Not completed',
+        orderStatus: 'Completed',
         orderDate: '22/01/2021',
         category: 'Mutual Funds',
         products: [],//link product ids
@@ -574,9 +592,41 @@ let ordersArr = [
         faqId: [],
     },
     {
-        orderStatus: 'Completed',
-        orderDate: '01/02/2021',
+        orderStatus: 'Pending',
+        orderDate: '23/01/2021',
+        category: 'Gold',
+        products: [],//link product ids
+        userId: null,//link userId
+        faqId: [],
+    },
+    {
+        orderStatus: 'Pending',
+        orderDate: '24/01/2021',
+        category: 'Stocks',
+        products: [],//link product ids
+        userId: null,//link userId
+        faqId: [],
+    },
+    {
+        orderStatus: 'Cancelled',
+        orderDate: '24/02/2021',
         category: 'FDs',
+        products: [],//link product ids
+        userId: null,//link userId
+        faqId: [],
+    },
+    {
+        orderStatus: 'Cancelled',
+        orderDate: '25/02/2021',
+        category: 'FDs',
+        products: [],//link product ids
+        userId: null,//link userId
+        faqId: [],
+    },
+    {
+        orderStatus: 'Cancelled',
+        orderDate: '25/02/2021',
+        category: 'Mutual Funds',
         products: [],//link product ids
         userId: null,//link userId
         faqId: [],

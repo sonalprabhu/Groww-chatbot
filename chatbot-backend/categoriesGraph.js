@@ -19,7 +19,7 @@ function createCategoriesGraph(){
     for(const primaryCategories of ['Orders','My Account','Stocks','Gold','FDs','Mutual Funds','Products']){
         categoryGraph.addEdge('root',primaryCategories);
     }
-    for(const orderCategories of ['Completed','Not completed','General']){
+    for(const orderCategories of ['Completed','Pending','Cancelled','General']){
         categoryGraph.addEdge('Orders',orderCategories);
     }
     for(const accountCategories of ['Groww Account','KYC','Bank Accounts','Payments']){
