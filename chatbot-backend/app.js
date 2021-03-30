@@ -12,6 +12,7 @@ const {Product} = require('./models/product');
 const {Category} = require('./models/category');
 const {populateBackend} = require('./populate_backend');
 const {getAnswerDynamicQuestion} = require('./dynamic_answer_mapper');
+const bcrypt = require('bcrypt');
 const app = express();
 
 const PORT = process.env.PORT_NO || 8081;//default port set to 8081
@@ -31,7 +32,15 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-
+async function flattenQuestionResponse(faqSet){
+    let response = [];
+    for(const faqElem of ((faqSet instanceof Set)?[...faqSet]:faqSet)){
+        for(let idx=0;idx<faqElem.QuestionText.length;idx++){
+            response.push({...faqElem,QuestionPos:idx,QuestionText: faqElem.QuestionText[idx]});
+        }
+    }
+    return response;
+}
 async function fetchUserKycFaqs(userId){
     let userKycFaqs = new Set();
     try{
@@ -51,7 +60,8 @@ async function fetchUserKycFaqs(userId){
         //do nothing
     }
     finally{
-        return [...userKycFaqs];
+        const response = await flattenQuestionResponse(userKycFaqs);
+        return response;
     }
 }
 async function checkProductPreviousOrders(userDoc,productDoc){
@@ -144,26 +154,29 @@ app.get('/',()=>{
 
 /**Basic Routes */
 app.get('/login',async (req,res)=>{
-    try{
-        let user = await User.findOne({$and: [{userName: req.query.userName},{userPass: req.query.userPass}]}).exec();
-        if(user !== null && user !== undefined){
-            const sealed = await Iron.seal(user,process.env.SESSION_SECRET,Iron.defaults);
-            res.status(200).cookie(process.env.AUTH_TOKEN_NAME,sealed,{
-                expires: new Date(Date.now()+900000),//available only for 15 minutes
-                sameSite: 'lax',
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                path: '/',
-            }).json({userId: user._id,userName: user.userName});
-        }
-        else{
+    User.findOne({userName: req.query.userName},function(err,userFound){
+        if(err){
             res.sendStatus(404);
         }
-    }
-    catch(err){
-        console.log(err);
-        res.sendStatus(404);
-    }
+        else{
+            bcrypt.compare(req.query.userPass,userFound.userPass,function(err,result){
+                if(err || result === false){
+                    res.sendStatus(404);
+                }
+                else{
+                    Iron.seal(userFound,process.env.SESSION_SECRET,Iron.defaults).then((sealed)=>{
+                        res.status(200).cookie(process.env.AUTH_TOKEN_NAME,sealed,{
+                            expires: new Date(Date.now()+900000),//available only for 15 minutes
+                            sameSite: 'lax',
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === 'production',
+                            path: '/',
+                        }).json({userId: userFound._id,userName: userFound.userName});
+                    }).catch((err)=>res.sendStatus(404));
+                }
+            })
+        }
+    });
 });
 
 app.get('/logout',async (req,res) => {
@@ -192,7 +205,7 @@ app.get('/getUserDetails/:userId',async (req,res)=>{
    try{
        const userId = req.params.userId;
        const user = await User.findById(userId).exec();
-       if(user === null || user === undefined){
+       if(user === null || user === undefined || Object.keys(user).length !== 0){
            res.sendStatus(404);
        } 
        else{
@@ -232,7 +245,7 @@ app.get('/getProductDetails/:productId',async (req,res)=>{
     try{
         let product = await Product.findById(productId).exec();
         product= product.toJSON();
-        if(product !== null && product !== undefined){
+        if(product !== null && product !== undefined && Object.keys(product).length !== 0){
             //console.log(productResponseMap(product,product.productCategory));
             res.status(200).json(productResponseMap(product,product.productCategory));
         }
@@ -267,7 +280,7 @@ app.get('/getOrderDetails/:orderId',async (req,res) => {//user Id also required
     let userId = req.query.user;
     try{
         let order = await Order.findOne({$and: [{_id: orderId},{userId}]}).exec();
-        if(order !== null && order !== undefined){
+        if(order !== null && order !== undefined && Object.keys(order).length !==0){
             res.status(200).json(order);//need for the filter on the fileds to be returned
         }
         else{
@@ -298,7 +311,7 @@ app.post('/placeOrder',async (req,res) => {//orderStatus will be in Not complete
     try{
         const userId = req.query.user;
         const user = await User.findById(userId).exec();
-        if(user === null || user === undefined){
+        if(user === null || user === undefined || Object.keys(user) === 0){
             res.sendStatus(404);
         }
         else{
@@ -340,7 +353,7 @@ app.patch('/confirmOrder',async (req,res)=>{
     try{
         const userId = req.query.user;
         const user = await User.findById(userId).exec();
-        if(user === null || user === undefined){
+        if(user === null || user === undefined || Object.keys(user).length === 0){
             res.sendStatus(404);
         }
         else{
@@ -374,7 +387,7 @@ app.delete('/cancelOrder/:orderId',async (req,res)=>{
     try{
         const orderId = req.params.orderId;
         const order = await Order.findById(orderId).exec();
-        if(order === null || order === undefined){
+        if(order === null || order === undefined || Object.keys(order).length === 0){
             res.sendStatus(404);
         }
         else if(order.orderStatus === 'Completed'){
@@ -400,7 +413,8 @@ app.delete('/cancelOrder/:orderId',async (req,res)=>{
 app.get('/search-on-category',async (req,res)=>{
     const categoryName = req.query.categoryName;
     const userId = req.query.user;
-    if(categoryName === null || categoryName === undefined){
+    const checkValidCategory = ['Stocks','FDs','Mutual Funds','Gold'].filter((c)=>c.toLowerCase() === categoryName.toString().toLowerCase());
+    if(checkValidCategory.length === 0){
         res.sendStatus(404);
     }
     else{
@@ -414,6 +428,7 @@ app.get('/search-on-category',async (req,res)=>{
                 let response = faqsFetched.map((faq)=> {
                     return ({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
                 });
+                response = await flattenQuestionResponse(response);
                 let userKycFaqs = await fetchUserKycFaqs(userId);
                 if(userKycFaqs.length !== 0)
                     response = userKycFaqs.concat(response);
@@ -434,7 +449,7 @@ app.get('/user-specific-order-details',async (req,res)=>{
     else{
         try{
             let user = await User.findById(userId).exec();
-            if(user === null || user === undefined)
+            if(user === null || user === undefined || Object.keys(user).length === 0)
                 res.sendStatus(404);
             else{
                 let faqs = new Set();
@@ -443,7 +458,7 @@ app.get('/user-specific-order-details',async (req,res)=>{
                     faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
                 }
                 let userKycFaqs = await fetchUserKycFaqs(userId);
-                faqs = [...faqs];
+                faqs = await flattenQuestionResponse(faqs);
                 if(userKycFaqs.length !==0)
                     faqs = userKycFaqs.concat(faqs);
                 res.status(200).json(faqs);
@@ -465,7 +480,7 @@ app.get('/user-account-questions',async (req,res)=> {
         try{
             let faqs = new Set();
             let user = await User.findById(userId).exec();
-            if(user === null || user === undefined){
+            if(user === null || user === undefined || Object.keys(user).length === 0){
                 res.sendStatus(404);
             }
             else{
@@ -473,7 +488,7 @@ app.get('/user-account-questions',async (req,res)=> {
                     let faqFetched = await Faq.findById(userAccountFaqId).exec();
                     faqs.add({QuestionId: faqFetched._id,QuestionText: faqFetched.faqQuestionText});
                 }
-                faqs = [...faqs];
+                faqs = await flattenQuestionResponse(faqs);
                 res.status(200).json(faqs);
             }
         }
@@ -493,13 +508,13 @@ app.get('/product-specific-questions',async (req,res)=>{
         try{
             let faqs = new Set();
             let product = await Product.findById(productId).exec();
-            if(product === null || product === undefined){
+            if(product === null || product === undefined || Object.keys(product).length === 0){
                 res.sendStatus(404);
             }
             else{
                 try{
                     const user = await User.findById(userId).exec();
-                    if(user !== null && user!== undefined){
+                    if(user !== null && user!== undefined && Object.keys(user).length !== 0){
                         const isLinkedWithPreviousOrders = await checkProductPreviousOrders(user,product);
                         if(isLinkedWithPreviousOrders){
                             for(const productFaqId of product.faqId){
@@ -532,7 +547,7 @@ app.get('/product-specific-questions',async (req,res)=>{
                 }
                 finally{
                     let userKycFaqs = await fetchUserKycFaqs(userId);
-                    faqs = [...faqs];
+                    faqs = await flattenQuestionResponse(faqs);
                     if(userKycFaqs.length !==0)
                         faqs = userKycFaqs.concat(faqs);
                     res.status(200).json(faqs);
@@ -555,7 +570,7 @@ app.get('/order-specific-questions',async (req,res)=>{
         try{
             let faqs = new Set();
             let user = await User.findById(userId).exec();
-            if(user === null || user === undefined){
+            if(user === null || user === undefined || Object.keys(user).length === 0){
                 res.sendStatus(404);
             }
             else{
@@ -567,7 +582,7 @@ app.get('/order-specific-questions',async (req,res)=>{
                         faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
                     }
                     let userKycFaqs = await fetchUserKycFaqs(userId);
-                    faqs = [...faqs];
+                    faqs = await flattenQuestionResponse(faqs);
                     if(userKycFaqs.length !==0)
                         faqs = userKycFaqs.concat(faqs);
                     res.status(200).json(faqs);
@@ -583,26 +598,27 @@ app.get('/order-specific-questions',async (req,res)=>{
     }
 });
 
-app.get('/get-answer-by-questionId/:questionId',async (req,res)=>{
+app.get('/get-answer-by-questionId/:questionId/:questionPos',async (req,res)=>{
     const questionId = req.params.questionId.toString();
+    const questionPos = parseInt(req.params.questionPos);
     const context = req.query;
-    console.log(context);
-    if(questionId === null || questionId === undefined){
+    if(questionId === null || questionId === undefined || questionPos === null || questionPos === undefined){
         res.sendStatus(404);
     }
     else{
         try{
             let faq = await Faq.findById(questionId).exec();
-            if(faq !== null && faq !== undefined){
-                if(faq.faqIsDynamic){
-                    let answer = await getAnswerDynamicQuestion(faq.faqQuestionText,context);
+            if(faq !== null && faq !== undefined && Object.keys(faq).length!==0){
+                if(faq.faqAnswer[questionPos].faqIsDynamic){
+                    const faqAnswerDecryptedObj = await Iron.unseal(faq.faqAnswer[questionPos].faqDynamicKey,process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+                    let answer = await getAnswerDynamicQuestion(faqAnswerDecryptedObj['answerFunc'],context);
                     if(answer === [] || answer === null || answer === undefined || answer.length===0){
                         throw new Error('Answer cannot be mapped');
                     }
                     res.status(200).json({Answer: answer});
                 }
                 else{
-                    res.status(200).json({Answer: faq.faqAnswerText});
+                    res.status(200).json({Answer: faq.faqAnswer[questionPos].faqAnswerText});
                 }
             }
             else{
@@ -622,7 +638,7 @@ app.get('/get-all-categories',async (req,res)=> {
         let allCategories = [];
         try{
             let user = await User.findById(userId).exec();
-            if(user === null || user === undefined){
+            if(user === null || user === undefined || Object.keys(user).length === 0){
                 throw new Error('Invalid user details');
             }
             let rootCategory = await Category.findOne({categoryName: 'root'}).exec();
@@ -686,7 +702,8 @@ app.get('/get-question-by-category/:categoryId',async (req,res)=>{
                 let faq = await Faq.findById(faqId).exec();
                 faqs.add({QuestionId: faq._id,QuestionText: faq.faqQuestionText});
             }
-            res.status(200).json([...faqs]);
+            faqs = await flattenQuestionResponse(faqs);
+            res.status(200).json(faqs);
         }
         catch(err){
             res.sendStatus(404);

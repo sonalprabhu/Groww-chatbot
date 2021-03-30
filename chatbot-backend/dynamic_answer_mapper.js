@@ -1,7 +1,7 @@
-const { faqArr } = require('./data');
+const {dynamicQuestions} = require('./dynamic_questions_handler');
 
-async function getAnswerDynamicQuestion(questionText,context){
-    let answer = await faqArr.filter((faq)=>faq.faqQuestionText === questionText)[0].faqDynamicAnswer(context);
+async function getAnswerDynamicQuestion(answerFunc,context){
+    let answer = await dynamicQuestions[answerFunc].call(null,context);
     return answer;
 }
 exports.getAnswerDynamicQuestion = getAnswerDynamicQuestion;
