@@ -1,7 +1,8 @@
 const { Order } = require('./models/order');
 const { Product } = require('./models/product');
 
-module.exports = {
+const dynamicQuestions = 
+{
     browseSimilarProducts:async (context) => {
         try{
             const order = await Order.findById(context.order).exec();
@@ -38,7 +39,7 @@ module.exports = {
                     if(order.orderStatus === 'Completed'){
                         countAvailability++;
                     }
-                    else{
+                    else if(order.orderStatus === 'Pending'){
                         countAvailabilityIncompleteStatus++;
                     } 
                 }
@@ -47,7 +48,8 @@ module.exports = {
         if(countAvailability>0)
             return [`Yes! you have already ordered for ${product.productName}.`,`You have ${countAvailability} such orders.`];
         if(countAvailabilityIncompleteStatus>0)
-            return [`No! you don't have any previously completed orders for ${product.productName}.`,`You have ${countAvailabilityIncompleteStatus} incompleted orders for this product.`,`Move to orders page to complete your order soon!`];
-        return [`Sorry! you haven't used ${product.productName} ${product.productCategory} previously.`,`Buy the product to get more benefits.`]
+            return [`No! you don't have any previously completed orders for ${product.productName}.`,`You have ${countAvailabilityIncompleteStatus} pending orders for this product.`,`Move to orders page to place your order soon!`];
+        return [`Sorry! you haven't used ${product.productName} ${product.productCategory} previously or your orders were cancelled.`,`Buy the product to get more benefits.`,`Raise a ticket if you find above information incorrect.`]
     }
 }
+exports.dynamicQuestions = dynamicQuestions;

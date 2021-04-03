@@ -5,6 +5,9 @@ const {Product} = require('./models/product');
 const {Category} = require('./models/category');
 const {createCategoriesGraph} = require('./categoriesGraph');
 const {faqArr,userArr,ordersArr,productArr} = require('./data');
+const Iron = require('@hapi/iron');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 async function addFaqs(){
     console.log('Deleting all the data in the faqs collection...');
@@ -12,11 +15,14 @@ async function addFaqs(){
     console.log('All faqs deleted. Total faq size '+faqArr.length+'...Adding faqs...');
 
     for(const faq of faqArr){
+        let faqRawAnswers = await Promise.all(faq.faqAnswer.map(async (answer)=>{
+            const faqDynamicKeyEncrypted = await Iron.seal({'answerFunc': answer.faqDynamicKey},process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+            return {...answer,faqDynamicKey: faqDynamicKeyEncrypted};
+        }));
         let faqObj = new Faq({
             faqQuestionText: faq.faqQuestionText,
             faqCategoryPath: faq.faqCategoryPath,
-            faqAnswerText: faq.faqAnswerText,
-            faqIsDynamic: faq.faqIsDynamic,
+            faqAnswer: faqRawAnswers,
         });
         let faqSaved = await faqObj.save();
         console.log('Faq saved with id: '+faqSaved._id);
@@ -97,7 +103,7 @@ async function addUsers(){
         for(const faq of faqsToBeLinked){
             user.faqId.push(faq._id);
         }
-        let userObj  = new User({...user});
+        let userObj  = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
         let userSaved = await userObj.save();
         console.log('User saved with id: '+userSaved._id);
     }
