@@ -15,7 +15,7 @@ let faqArr = [
                     },
                     {
                         faqAnswerText: 
-                            [`Effective from 18 Feb 2021, you'll have to enter TPIN and OTP received on your registered mobile number while verifying your holdings before selling. (Vallidity: 1 day)`],
+                            [`Effective from 18 Feb 2021, you'll have to enter TPIN and OTP received on your registered mobile number while verifying your holdings before selling. (Validity: 1 day)`],
                         faqIsDynamic: false,
                         faqDynamicKey: '', 
                     }],
