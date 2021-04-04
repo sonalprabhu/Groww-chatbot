@@ -11,7 +11,9 @@ const {Order} = require('./models/order');
 const {Product} = require('./models/product');
 const {Category} = require('./models/category');
 const {populateBackend} = require('./populate_backend');
+const {createCategoriesGraph} = require('./categoriesGraph');
 const {getAnswerDynamicQuestion} = require('./dynamic_answer_mapper');
+const {dynamicQuestions} = require('./dynamic_questions_handler');
 const bcrypt = require('bcrypt');
 const app = express();
 
@@ -20,10 +22,10 @@ mongoose.connect(process.env.MONGODB_URI,{useNewUrlParser: true,useUnifiedTopolo
 
 mongoose.connection.once('open',async () => {
     console.log('connected to mongodb');
-    populateBackend();//this function call to be used only when db clean up or refilling of data required.
+    //populateBackend();//this function call to be used only when db clean up or refilling of data required.
 });
 const corsOptions = {
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL,process.env.ADMIN_URL],
     credentials: true,
 }
 app.use(cors(corsOptions));
@@ -396,6 +398,72 @@ app.patch('/cancelOrder',async (req,res) => {
         res.sendStatus(404);
 
     }
+});
+
+/**Chatbot-admin Routes */
+app.get('/getDynamicFuncs',async (req,res)=>{
+    const dynamicFuncList = Object.keys(dynamicQuestions);
+    res.status(200).json({dynamicFuncList});
+});
+
+app.post('/addFaq',async (req,res)=>{
+    const faq = req.body;
+    let faqRawAnswers = await Promise.all(faq.faqAnswer.map(async (answer)=>{
+        const faqDynamicKeyEncrypted = await Iron.seal({'answerFunc': answer.faqDynamicKey},process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+        return {...answer,faqDynamicKey: faqDynamicKeyEncrypted};
+    }));
+    let faqObj = new Faq({
+        faqQuestionText: faq.faqQuestionText,
+        faqCategoryPath: faq.faqCategoryPath,
+        faqAnswer: faqRawAnswers,
+    });
+    const faqSaved = await faqObj.save();
+    if(faqSaved.faqCategoryPath[0]==='Orders' && faqSaved.faqCategoryPath[1]!=='General'){
+        let saved = await Order.updateMany({orderStatus: faqSaved.faqCategoryPath[1]},{$push: {faqId: faqSaved._id}}).exec();
+    }
+    else if(faqSaved.faqCategoryPath[0]==='Products'){
+        await Product.updateOne({productName: faqSaved.faqCategoryPath[1]},{$push: {faqId: faqSaved._id}}).exec();
+    }
+    else if(faqSaved.faqCategoryPath[0]='My Account'){
+        await User.updateMany({},{$push: {faqId: faqSaved._id}}).exec();
+    }
+    await Category.updateOne({categoryName: faqSaved.faqCategoryPath[faqSaved.faqCategoryPath.length-1]},{$push: {faqId: faqSaved._id}}).exec();
+    res.status(201).json({faqId: faqSaved._id.toString()});
+})
+
+app.get('/getAllCategoryPaths',async (req,res)=>{
+
+    let categoriesGraph = createCategoriesGraph();
+    function getAllPaths(){
+        let stack=[];
+        stack.push(['root',""]);
+        let allCategories = [];
+
+        while(stack.length > 0){
+            let curr = stack.pop();
+            if(curr[1]){
+                curr[1] += "->"
+            }
+            else{
+                curr[1] += "\n"
+            }
+            curr[1] += curr[0];
+            if(categoriesGraph[curr[0]] === null || categoriesGraph[curr[0]] === undefined){
+                allCategories.push(curr[1].split('->'));
+            }
+            if(categoriesGraph[curr[0]]!==null && categoriesGraph[curr[0]]!==undefined)
+            {
+                for(const child of categoriesGraph[curr[0]]){
+                    stack.push([child,curr[1]]);
+                }
+            }
+        }
+        for(let categoryPath of allCategories){
+            categoryPath.shift();
+        }
+        return allCategories;
+    }
+    res.status(200).json({'allCategoriesPaths':getAllPaths()});
 });
 
 // app.delete('/cancelOrder/:orderId',async (req,res)=>{
