@@ -20,7 +20,7 @@ async function login(name,password){
 }
 
 async function logout(){
-    return axios.get('http://localhost:8081/logout',{withCredentials:true})
+    return axios.get('http://localhost:8081/logout',{params:{user:Cookies.get('userId')}},{withCredentials:true})
     .then((response) => {
     Cookies.set('user','guest');
     Cookies.set('userId','');

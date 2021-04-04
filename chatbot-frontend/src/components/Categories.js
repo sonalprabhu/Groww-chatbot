@@ -9,6 +9,9 @@ import {close} from '../app/reducers/chatbotToggle';
 function Categories(props) {
     const dispatch = useDispatch();
     const [items,setItems] = useState([]);
+    if(document.querySelector(".react-chatbot-kit-chat-input-container")){
+        document.querySelector(".react-chatbot-kit-chat-input-container").style.display = 'none';
+        }
     var mapper={
         "Stocks":'Stocks',
         "FD":'FDs',
@@ -38,7 +41,7 @@ function Categories(props) {
        <div>
             <SubHeader/>
     <div className="container web-align wrapper">
-            {props.text!=='FD' && <h1 className="heading">{props.text} in News</h1>}
+            {props.text!=='FD' && props.text!=='Gold' && <h1 className="heading">{props.text} in News</h1>}
             {props.text==='FD' && <h1 className="heading">Equitas Bank FDs</h1>}
                <div className="row d-flex justify-content-center">
                {items.map((item)=>{

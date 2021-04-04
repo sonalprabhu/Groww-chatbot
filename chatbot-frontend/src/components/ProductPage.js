@@ -23,7 +23,7 @@ export default function ProductPage(props) {
 
     return (
         <div>
-        <SubHeader/>
+        <SubHeader remove={true}/>
         <div className="container web-align wrapper">
              {product.productCategory !== 'FDs' && 
                    <div className="specific-card" key={product._id}>

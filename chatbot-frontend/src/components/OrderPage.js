@@ -25,13 +25,13 @@ export default function OrderPage(props) {
 
     return (
         <div>
-        <SubHeader/>
+        
         <div className="container web-align wrapper">
         <div className="row d-flex justify-content-center">
         <div className="order-card col-12" key={order._id}>
             <div className="order-date">{order.orderDate} </div>
             <div className="order-details">
-             <div className="order-name">{order.productName||"This is a product name"} </div>
+             <div className="order-name">{order.products?( order.products[0]?order.products[0].productName:"This is a product name"):"This is a product name"} </div>
              <div className="item-price">₹{order.productPrice ||10000} </div>
              <Button className="order-status">{order.orderStatus} </Button>
              </div>

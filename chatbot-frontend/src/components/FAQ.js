@@ -1,9 +1,14 @@
 import './App.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { useSelector} from 'react-redux'
+import { useSelector, useDispatch} from 'react-redux';
+import {clearMessages} from '../app/reducers/chatbotMessages';
+import {close} from '../app/reducers/chatbotToggle';
 
 export default function FAQ(props) {
+  if(document.querySelector(".react-chatbot-kit-chat-input-container")){
+    document.querySelector(".react-chatbot-kit-chat-input-container").style.display = 'none';
+    }
   var mapper={
     "stocks":'Stocks',
     "fd":'FDs',
@@ -12,7 +17,12 @@ export default function FAQ(props) {
   }
     const currentLoc = window.location.pathname;
     const [options,setOptions]=useState([]);
-    const userId=useSelector(state=>state.users.userId.value)
+    const userId=useSelector(state=>state.users.userId.value);
+    const dispatch = useDispatch();
+
+    async function clearOut(){
+      dispatch(close())
+    }
    
 
     useEffect(async () => {
@@ -84,10 +94,10 @@ export default function FAQ(props) {
   
 
   
-      const optionsMarkup = options.map((option) => (
+      const optionsMarkup = options.slice(0,options.length > 5 ? 5:options.length).map((option) => (
         <button
           className="learning-option-button"
-          key={option.QuestionId}
+          key={option.QuestionId+option.QuestionPos}
           onClick={()=>props.actionProvider.handleQuestionClick(option)}
         >
           {option.QuestionText}
@@ -100,6 +110,13 @@ export default function FAQ(props) {
       >
         {"Have more queries?"}
       </button>)
+            // optionsMarkup.push(<button
+            //   className="learning-option-button"
+            //   key="2"
+            //   onClick={async()=>{await clearOut().then(dispatch(clearMessages()))}}
+            // >
+            //   {"Clear and close"}
+            // </button>)
     
       return(
         <div className="learning-options-container">

@@ -14,14 +14,33 @@
 }
 .react-chatbot-kit-chat-bot-message{
   margin-left:0px !important;
+  width:fit-content !important;
 }
 .react-chatbot-kit-chat-message-container{
   border-left:1px solid grey;
+  background:darkcyan !important;
+  overflow-x: hidden !important;
+  border-radius:0px 0px 20px 20px !important;
+}
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar {
+  display: none !important;
+}
+.react-chatbot-kit-user-chat-message{
+  border-radius:30px 30px 0px 30px !important;
+}
+.react-chatbot-kit-user-chat-message-arrow{
+  border:0px !important;
+}
+.react-chatbot-kit-chat-bot-message{
+  border-radius:0px 0px 20px 20px !important;
+}
+.react-chatbot-kit-chat-bot-message-arrow{
+  border:0px !important;
 }
 
 .react-chatbot-kit-chat-header{
-  border-top-right-radius: 5px;
-    border-top-left-radius: 5px;
+   border-top-right-radius: 20px !important;
+    border-top-left-radius: 20px !important;
     background-color: #efefef;
     font-family: Arial;
     display: flex;
@@ -43,6 +62,14 @@
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
+}
+
+.clear-btn{
+  position: fixed;
+    bottom:10px;
+    right: 100px;
+    height:40px;
+   
 }
 
 
@@ -67,9 +94,13 @@
   -webkit-font-smoothing: auto;
   letter-spacing: .3px;
   color: #44475b;
-  margin: 0px 13px 0px 630px;
+  margin: 0px 30px 0px 600px;
   cursor: pointer;
   --webkit-tap-highlight-color:transparent;
+}
+
+.web-align{
+  padding-top:10px;
 }
 
 .sideLabel.side{
@@ -210,8 +241,8 @@ a:hover{
 .learning-option-button {
   padding: 0.5rem;
   border-radius: 5px;
-  background: transparent;
-  border: 1px solid green;
+  background: aliceblue;
+  border: 1px solid transparent;
   margin: 3px;
 }
 .leftBox{
@@ -288,10 +319,45 @@ a:hover{
 }
 
 .btn-primary{
+  transition-duration: 0.4s;
+  background-color: #00d09c;
+    border-color: #fdfdfd;
+}
+
+.btn-primary:hover{
   background-color: #00d09c;
     border-color: #fdfdfd;
 }
 
 .row{
   margin:0px !important;
+}
+
+.login-left{
+  width:50%;
+  background-image: url('https://assets-netstorage.groww.in/website-assets/prod/1.5.0/build/client/images/patternImg.0edf5760.svg');
+  background-repeat: no-repeat;
+  color:white;
+  font-size: 40px;
+  font-weight:500;
+  border-radius:10px 0px 0px 10px;
+}
+.login-right{
+  border-radius:10px;
+  width:50%;
+}
+.login-container{
+  border-radius:10px;
+  width:800px;
+  height: 400px;
+  box-shadow: 1px 1px 7px 1px rgba(0,0,0,0.1);
+  margin: 0px 0px 0px 100px !important;
+  position: relative;
+}
+
+.typingeffect{
+  position: absolute;
+  bottom:5px;
+  left:10px;
+  font-size:30px;
 }

@@ -17,7 +17,8 @@ import PrivateRoute from './PrivateRoute';
 import Login from './Login';
 import Logout from './Logout';
 import { useSelector, useDispatch } from 'react-redux'
-import {close, changeState } from '../app/reducers/chatbotToggle'
+import {close, changeState } from '../app/reducers/chatbotToggle';
+import {clearMessages,storeMessages} from '../app/reducers/chatbotMessages';
 import {connect} from 'react-redux';
 import OrderPage from './OrderPage';
 import FullFAQ from './FullFAQ';
@@ -26,19 +27,14 @@ import CategorySubQuestions from './CategorySubQuestion';
 function App(props) {
   const userName=useSelector(state=>state.users.user.value);
   const userId=useSelector(state=>state.users.userId.value);
+  const chatbotMessages=useSelector(state=>state.messages.value);
+  const [currentMessages,setCurrent]=useState([]);
   const [user,setUser] =useState({userName,userId});
   const isOpen = useSelector(state => state.chatbot.value)
   const dispatch = useDispatch()
-  const [isLogIn,setIsLogIn] = useState(false)
-  async function checkAuth(){
-    const isLoggedIn = await axios.get('http://localhost:8081/checkAuth',{params:{user:user.userId}},{withCredentials:true})
-    .then((response)=>{
-  return response.data.auth})
-    .catch((err)=>{
-      return false})
-      setIsLogIn(isLoggedIn)
+  if(document.querySelector(".react-chatbot-kit-chat-input-container")){
+  document.querySelector(".react-chatbot-kit-chat-input-container").style.display = 'none';
   }
-  checkAuth()
 
 useEffect( () => {
   
@@ -46,24 +42,38 @@ useEffect( () => {
     {
       setUser({userName:props.user.user,userId:props.user.userId})
     }
-}, [props.user]);
+}, [props.user,props.messages]);
 
 
  const saveMessages = (messages) => {
-  //  console.log("These messages were already present")
-  //  if(JSON.parse(localStorage.getItem("chat_messages")))
-  //  console.log(JSON.parse(localStorage.getItem("chat_messages")))
-  localStorage.setItem("chat_messages", JSON.stringify(messages));
+   dispatch(storeMessages(messages))
 };
 
 const loadMessages = () => {
-  const messages = JSON.parse(localStorage.getItem("chat_messages"));
+  var oldMessages=JSON.parse(JSON.stringify(chatbotMessages));
+  let initialMessage;
+  if(oldMessages)
+  oldMessages=oldMessages.filter((messages)=>{
+  if(messages.message && messages.message.includes('Hello'))
+  initialMessage=messages;
+  else if(messages.message && !messages.message.includes('Feel free to explore our wide category list') 
+  && !messages.message.includes('These are some more categories') &&
+  !messages.message.includes('These are the questions under this category') )
   return messages;
+  })
+
+  if(initialMessage)
+  oldMessages.push(initialMessage)
+  
+  return oldMessages;
+  // var oldMessages=chatbotMessages;
+  // oldMessages=[]
+  // return oldMessages;
 };
 
 const config={
   botName:"Groww Chatbot",
-    initialMessages: [createChatBotMessage(`Hello ${user.userName} !What do you want to know?`,{widget:"FAQ"}),],
+    initialMessages: [createChatBotMessage(`Hello !What would you like to know?`,{widget:"FAQ"}),],
     customStyles: {
       botMessageBox: {
         backgroundColor: "#00d09c",
@@ -104,27 +114,35 @@ const config={
           <Switch> <Route exact path="/mutualfund" render={()=> <Categories text="Mutual Funds"/>} /></Switch>
           <Switch> <Route exact path="/stocks" component={()=> <Categories text="Stocks"/>} /> </Switch>
           <Switch> <Route exact path="/login" component={Login} /> </Switch>
-          <Switch> <PrivateRoute exact path="/logout" isAuthenticated={userName !== 'guest'} component={Logout} /> </Switch>
-          <Switch> <PrivateRoute path={["/dashboard/orders/stocks/:id","/dashboard/orders/mutualfund/:id","/dashboard/orders/fd/:id","/dashboard/orders/gold/:id"]} isAuthenticated={isLogIn === true} component={OrderPage} /> </Switch>
-          <Switch> <PrivateRoute exact path={["/dashboard/orders/stocks","/dashboard/orders/mutualfund","/dashboard/orders/fd","/dashboard/orders/gold"]} isAuthenticated={isLogIn === true} component={Orders} /> </Switch>
-          <Switch> <PrivateRoute exact path="/dashboard/account" isAuthenticated={isLogIn === true} component={Account} /> </Switch> 
+          <Switch> <PrivateRoute exact path="/logout" isAuthenticated={user.userName !== 'guest'} component={Logout} /> </Switch>
+          <Switch> <PrivateRoute path={["/dashboard/orders/stocks/:id","/dashboard/orders/mutualfund/:id","/dashboard/orders/fd/:id","/dashboard/orders/gold/:id"]} isAuthenticated={user.userName !== 'guest'} component={OrderPage} /> </Switch>
+          <Switch> <PrivateRoute exact path={["/dashboard/orders/stocks","/dashboard/orders/mutualfund","/dashboard/orders/fd","/dashboard/orders/gold"]} isAuthenticated={user.userName !== 'guest'} component={Orders} /> </Switch>
+          <Switch> <PrivateRoute exact path="/dashboard/account" isAuthenticated={user.userName !=='guest'} component={Account} /> </Switch> 
           <Redirect to="/stocks" from="/" />
 
       <div className="chatbot">
       {isOpen && ( 
+        chatbotMessages.length==0 ? (
+        <Chatbot config={config} 
+        actionProvider={ActionProvider} messageParser={MessageParser} 
+        saveMessages={saveMessages}
+        />)
+        :
       <Chatbot config={config} 
       actionProvider={ActionProvider} messageParser={MessageParser} 
-      // saveMessages={saveMessages} messageHistory={loadMessages()}
+      saveMessages={saveMessages} messageHistory={loadMessages()}
       />)}
-      </div>       
+      </div>  
+      {!isOpen && chatbotMessages.length!=0 && (<Button className="clear-btn" onClick={() => dispatch(clearMessages())}><i className="fa fa-trash" aria-hidden="true"></i></Button>)}     
       <Button className="bot-btn" onClick={() => dispatch(changeState())}>&nbsp;</Button>
+     
 
     </div>
   );
 }
 
 const mapStateToProps = (store) => {
-  return { user: store.users }
+  return { user: store.users ,messages:store.messages}
 }
 
 export default connect(mapStateToProps)(App);

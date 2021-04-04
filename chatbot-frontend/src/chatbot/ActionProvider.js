@@ -10,21 +10,9 @@ class ActionProvider {
     }
   
     greet() {
-      const greetingMessage = this.createChatBotMessage("Hi, friend.")
+      const greetingMessage = this.createChatBotMessage("Please select from available questions")
       this.updateChatbotState(greetingMessage)
     }
-
-    handleAccountList = (text) => {
-      const clientMessage=this.createClientMessage(text)
-      const message = this.createChatBotMessage(
-        `Fantastic, I've got the following categories in ${text}:`,
-        {
-          widget: "javascriptLinks",
-        }
-      );
-  
-      this.updateChatbotState(message,clientMessage);
-    };
 
     handleCategoryClick = (option) =>{
       const clientMessage=this.createClientMessage(option.Name);
@@ -91,7 +79,7 @@ class ActionProvider {
       }
      
       
-      axios.get(`http://localhost:8081/get-answer-by-questionId/${selectedQuestion.QuestionId}`,{params:paramList})
+      axios.get(`http://localhost:8081/get-answer-by-questionId/${selectedQuestion.QuestionId}/${selectedQuestion.QuestionPos}`,{params:paramList})
       .then(res => {
         var ans = res.data.Answer;
         var msg=[];

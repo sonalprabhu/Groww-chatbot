@@ -20,18 +20,18 @@ export default function Account(props) {
     }
     fetchData();
   
-    }, []);
+    }, [userId]);
 
 
     return (
         <div>
-        <SubHeader remove={true}/>
+       
         <div className="container web-align wrapper">
         <div className="account-section">
             <div className="leftBox">
             <div className="account-wrapper">
-            <div><img class=" profilePic circle" alt="Groww" src={userLogo} /></div>
-            <div class="">{user.userName}</div>
+            <div><img className=" profilePic circle" alt="Groww" src={userLogo} /></div>
+            <div className="">{user.userName}</div>
             </div>
             </div>
             <div className="rightBox">

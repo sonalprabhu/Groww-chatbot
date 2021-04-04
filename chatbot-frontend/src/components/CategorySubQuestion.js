@@ -7,7 +7,10 @@ import Cookies from "js-cookie";
 export default function CategoryQuestions(props) {
     const currentLoc = window.location.pathname;
     const [options,setOptions]=useState([]);
-    const userId=useSelector(state=>state.users.userId.value)
+    const userId=useSelector(state=>state.users.userId.value);
+    if(document.querySelector(".react-chatbot-kit-chat-input-container")){
+      document.querySelector(".react-chatbot-kit-chat-input-container").style.display = 'none';
+      }
    
 
     useEffect(async () => {
@@ -30,7 +33,7 @@ export default function CategoryQuestions(props) {
   
         <button
           className="learning-option-button"
-          key={option.QuestionId}
+          key={option.QuestionId+option.QuestionPos}
           onClick={()=>{props.actionProvider.handleQuestionClick(option)}}        > 
           {option.QuestionText}
         </button>
