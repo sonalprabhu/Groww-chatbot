@@ -512,16 +512,16 @@ let faqArr = [
                 ],
     },
     {
-        faqQuestionText: ['Browse similar products?',
+        faqQuestionText: [//'Browse similar products?',
                           'How to cancel an order?'],
         faqCategoryPath: ['Orders','Completed'],
         faqAnswer: [
-                    {
-                        faqAnswerText:
-                            [''],
-                        faqIsDynamic: true,
-                        faqDynamicKey: 'browseSimilarProducts',
-                    },
+                    // {
+                    //     faqAnswerText:
+                    //         [''],
+                    //     faqIsDynamic: true,
+                    //     faqDynamicKey: 'browseSimilarProducts',
+                    // },
                     {
                         faqAnswerText:
                             ['You cancel your order by moving to individual orders page, click on cancel and press ok to confirm cancel your order.',
@@ -1025,7 +1025,19 @@ let userArr = [
     },
 ]
 
+const adminArr = [
+    {
+        userName: 'arnab@groww.com',
+        userPass: 'Welcome@123',
+    },
+    {
+        userName: 'sonal@groww.com',
+        userPass: 'Welcome@321',
+    }
+]
+
 exports.faqArr = faqArr;
 exports.userArr = userArr;
 exports.productArr = productArr;
 exports.ordersArr = ordersArr;
+exports.adminArr = adminArr;
