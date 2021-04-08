@@ -13,15 +13,45 @@ h1{
     margin: 0 auto;
     margin-top: 2%;
 }
+.loginform{
+    width: 50% !important;
+    margin: 0 auto;
+    margin-top: 10%;
+}
+.categoryform{
+    width: 50% !important;
+    margin: 0 auto;
+    margin-top: 5%;
+}
 .chatbot-form-header{
-    text-align: center;
+    text-align: left;
+    padding: 0.2%;
     background: linear-gradient(to left, #4568dc,#b06ab3);
 }
-form{
+.login-form-header{
+    text-align: left;
+    padding: 1%;
+    background: linear-gradient(to left, #4568dc,#b06ab3);
+}
+.category-form-header{
+    text-align: left;
+    padding: 1%;
+    background: linear-gradient(to left, #4568dc,#b06ab3);
+}
+.login-form{
     background-color: white;
     padding: 3%;
 }
+.add-faq-form{
+    background-color: white;
+    padding: 3%;
+}
+.add-category-form{
+    background-color: white;
+    padding: 3%;
+    padding-bottom: 7%;
+}
 img{
     width: 5%;
-    height: 50px;
+    height: 5%;
 }

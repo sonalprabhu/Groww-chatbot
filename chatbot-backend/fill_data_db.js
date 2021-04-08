@@ -3,8 +3,9 @@ const {User} = require('./models/user');
 const {Order} = require('./models/order');
 const {Product} = require('./models/product');
 const {Category} = require('./models/category');
+const {Admin} = require('./models/admin');
 const {createCategoriesGraph} = require('./categoriesGraph');
-const {faqArr,userArr,ordersArr,productArr} = require('./data');
+const {faqArr,userArr,ordersArr,productArr,adminArr} = require('./data');
 const Iron = require('@hapi/iron');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -177,9 +178,25 @@ async function linkUsersToOrders(){
     console.log('All users linked with orders');
     return true;
 }
+
+async function addAdmins(){
+    console.log('Deleting all the superusers in the admins collection...');
+    let deleteAllUsers = await Admin.deleteMany().exec();
+    console.log('All superusers deleted. Total superusers array size: '+adminArr.length+'...Adding superusers');
+
+    for(const admin of adminArr){
+
+        const adminobj  = new Admin({...admin,userPass: bcrypt.hashSync(admin.userPass,saltRounds)});
+        const adminSaved = await adminobj.save();
+        console.log('Superuser saved with id: '+adminSaved._id);
+    }
+    console.log('All superusers added successfully');
+    return true;
+}
 exports.addFaqs = addFaqs;
 exports.addCategories = addCategories;
 exports.addUsers = addUsers;
 exports.addProducts = addProducts;
 exports.addOrders = addOrders;
+exports.addAdmins = addAdmins;
 exports.linkUsersToOrders = linkUsersToOrders;
