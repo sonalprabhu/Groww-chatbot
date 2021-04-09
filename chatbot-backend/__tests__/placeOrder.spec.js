@@ -16,6 +16,7 @@ describe("Testing '/placeOrder' API",()=> {
             orderDate: "20/03/2021",
             category:  sampleProduct.productCategory,
             products: [sampleProduct._id.toString()],
+            units: [1],
         });
         const newOrderId = response.body.orderId;
         const updateUserPromise = (userId,orderId)=> {
@@ -31,8 +32,8 @@ describe("Testing '/placeOrder' API",()=> {
                 })
             })
         }
-        const removeOrderFromUserOrders = await updateUserPromise(sampleUser._id,newOrderId);
-        const deleteOrder = await Order.deleteOne({_id: newOrderId}).exec();
+        await updateUserPromise(sampleUser._id,newOrderId);
+        await Order.deleteOne({_id: newOrderId}).exec();
         expect(response.status).toBe(201);
         expect(response.type).toBe('application/json');
         done();

@@ -12,18 +12,17 @@ const saltRounds = 10;
 
 async function addFaqs(){
     console.log('Deleting all the data in the faqs collection...');
-    let deleteAllFaqs = await Faq.deleteMany().exec();
+    await Faq.deleteMany().exec();
     console.log('All faqs deleted. Total faq size '+faqArr.length+'...Adding faqs...');
 
     for(const faq of faqArr){
-        let faqRawAnswers = await Promise.all(faq.faqAnswer.map(async (answer)=>{
-            const faqDynamicKeyEncrypted = await Iron.seal({'answerFunc': answer.faqDynamicKey},process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
-            return {...answer,faqDynamicKey: faqDynamicKeyEncrypted};
+        const faqDecryptedQuestionAnswers = await Promise.all(faq.faqQuestionAnswer.map(async (questionAnswer)=>{
+            const faqDynamicKeyEncrypted = await Iron.seal({'answerFunc': questionAnswer.faqDynamicKey},process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+            return {...questionAnswer,faqDynamicKey: faqDynamicKeyEncrypted};
         }));
-        let faqObj = new Faq({
-            faqQuestionText: faq.faqQuestionText,
-            faqCategoryPath: faq.faqCategoryPath,
-            faqAnswer: faqRawAnswers,
+        const faqObj = new Faq({
+            ...faq,
+            faqQuestionAnswer: faqDecryptedQuestionAnswers
         });
         let faqSaved = await faqObj.save();
         console.log('Faq saved with id: '+faqSaved._id);
@@ -33,11 +32,11 @@ async function addFaqs(){
 }
 async function addCategories(){
     console.log('Deleting all categories');
-    let deleteAllCategories = await Category.deleteMany().exec();
+    await Category.deleteMany().exec();
     console.log('All categories deleted. Creating new categories...');
 
     let updateCategoryPromise = (categoryObj,subCategoryIds) => {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve,_)=>{
             Category.updateOne({_id: categoryObj._id},{$set: {hasSubCategory: true,subCategoryId: subCategoryIds}},{upsert: true}).exec().then((res)=>{
                 resolve({
                     ...res
@@ -47,7 +46,7 @@ async function addCategories(){
     }
     
     let updateFaqCategory = (categoryObj,faqIds) => {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve,_)=>{
             Category.updateOne({_id: categoryObj._id},{$set: {faqId: faqIds}},{upsert: true}).exec().then((res)=>{
                 resolve({
                     ...res
@@ -80,14 +79,14 @@ async function addCategories(){
                 queue.push(subCategorySaved);
                 subCategoryIds.push(subCategorySaved._id);
             }
-            let appendSubCategoryIds = await updateCategoryPromise(s,subCategoryIds);
+            await updateCategoryPromise(s,subCategoryIds);
         }
         catch(err){
-            let faqsToBeLinked = await Faq.find({faqCategoryPath: s.categoryName}).exec();
+            let faqsToBeLinked = await Faq.find({faqCategoryName: s.categoryName}).exec();
             faqsToBeLinked = faqsToBeLinked.map((faq)=>{
                 return faq._id
             });
-            let appendFaqCategories = await updateFaqCategory(s,faqsToBeLinked);
+            await updateFaqCategory(s,faqsToBeLinked);
         }
     }
     console.log('All categories created...');
@@ -96,33 +95,43 @@ async function addCategories(){
 
 async function addUsers(){
     console.log('Deleting all the users in the user collection...');
-    let deleteAllUsers = await User.deleteMany().exec();
+    await User.deleteMany().exec();
     console.log('All users deleted. Total users size: '+userArr.length+'...Adding users');
 
     for(const user of userArr){
-        let faqsToBeLinked = await Faq.find({faqCategoryPath: 'My Account'}).exec();
-        for(const faq of faqsToBeLinked){
-            user.faqId.push(faq._id);
-        }
-        let userObj  = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
+        // let myAccountCategoryDoc = await Category.findOne({categoryName: 'My Account'}).exec();
+        // user.categoryId = [...myAccountCategoryDoc.subCategoryId];
+        let userObj = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
         let userSaved = await userObj.save();
         console.log('User saved with id: '+userSaved._id);
+        // let faqsToBeLinked = await Faq.find({faqCategoryPath: 'My Account'}).exec();
+        // for(const faq of faqsToBeLinked){
+        //     user.faqId.push(faq._id);
+        // }
+        // let userObj  = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
+        // let userSaved = await userObj.save();
+        // console.log('User saved with id: '+userSaved._id);
     }
     console.log('All users added successfully');
     return true;
 }
 async function addProducts(){
     console.log('Deleting all previous products');
-    let deleteAllProducts = await Product.deleteMany().exec();
+    await Product.deleteMany().exec();
     console.log('All products deleted..Creating new products of size: '+productArr.length);
     for(const product of productArr){
-        let productFaqs = await Faq.find({faqCategoryPath: {$all: ['Products',product.productName]}}).exec();
-        for(const faq of productFaqs){
-            product.faqId.push(faq._id);
-        }
+        // let productCategory = await Category.findOne({categoryName: product.productName}).exec();
+        // product.categoryId = [...productCategory.subCategoryId];
         let productObj = new Product({...product});
         let productSaved = await productObj.save();
         console.log('Product saved with id: '+productSaved._id);
+        // let productFaqs = await Faq.find({faqCategoryPath: {$all: ['Products',product.productName]}}).exec();
+        // for(const faq of productFaqs){
+        //     product.faqId.push(faq._id);
+        // }
+        // let productObj = new Product({...product});
+        // let productSaved = await productObj.save();
+        // console.log('Product saved with id: '+productSaved._id);
     }
     console.log('All products added successfully');
     return true;
@@ -130,7 +139,7 @@ async function addProducts(){
 async function addOrders(){
 
     console.log('Deleting all previous orders');
-    let deleteAllOrders = await Order.deleteMany().exec();
+    await Order.deleteMany().exec();
     console.log('All orders deleted...Creating new orders of size: '+ordersArr.length);
     let allUsers = await User.find().exec();
     let i=0;
@@ -141,14 +150,17 @@ async function addOrders(){
             break;
         }
         order.userId = allUsers[i]._id;
+        order.units=[1];
         i++;
         if(i == allUsers.length){
             i=0;
         }
-        let faqsToBeLinked = await Faq.find({faqCategoryPath: {$all: ['Orders',order.orderStatus]}}).exec();
-        for(const faq of faqsToBeLinked){
-            order.faqId.push(faq._id);
-        }
+        // let orderStatusCategory = await Category.findOne({categoryName: order.orderStatus}).exec();
+        // order.categoryId = [orderStatusCategory._id];
+        // let faqsToBeLinked = await Faq.find({faqCategoryPath: {$all: ['Orders',order.orderStatus]}}).exec();
+        // for(const faq of faqsToBeLinked){
+        //     order.faqId.push(faq._id);
+        // }
         let orderObj = new Order({...order});
         let orderSaved = await orderObj.save();
         console.log('Order saved with id: '+orderSaved._id);
@@ -162,9 +174,8 @@ async function linkUsersToOrders(){
     for(const order of allOrders){
         let user = await User.findById(order.userId).exec();
         user.userOrders.push(order._id);
-        //let updateUser = await User.updateOne({_id: user._id},{$set: {userOrders: user.userOrders}},{upsert: true}).then((res)=>res);
         let updateUserPromise = () => {
-            return new Promise((resolve,reject)=> {
+            return new Promise((resolve,_)=> {
                 User.updateOne({_id: user._id},{$set: {userOrders: user.userOrders}},{upsert: true}).exec().then((res)=>{
                     resolve({
                         ...res
@@ -172,7 +183,7 @@ async function linkUsersToOrders(){
                 });
             })
         }
-        let updateUser = await updateUserPromise();
+        await updateUserPromise();
         console.log('User with id '+user._id+' is successfully updated');
     }
     console.log('All users linked with orders');

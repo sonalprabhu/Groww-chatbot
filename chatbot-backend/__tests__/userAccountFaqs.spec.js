@@ -1,6 +1,6 @@
-const {Faq} = require('../models/faqs');
+const {Category} = require('../models/category');
 const {User} = require('../models/user');
-const {app} = require('../app');
+const {app,getFaqsFromCategory} = require('../app');
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 
@@ -8,14 +8,8 @@ describe("Testing '/user-account-questions' API",()=> {
 
     it(`tests '/user-account-questions' and user is valid`,async (done) => {
         const validUser = await User.findOne({}).exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'My Account'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const myAccountCategory = await Category.findOne({categoryName: 'My Account'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(myAccountCategory);
         const response = await supertest(app).get('/user-account-questions').query({
             user: validUser._id.toString(),
         });

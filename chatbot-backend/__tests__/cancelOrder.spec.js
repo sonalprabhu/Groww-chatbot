@@ -2,8 +2,6 @@ const {app} = require('../app');
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 const { Order } = require('../models/order');
-const { User} = require('../models/user');
-const { Product } = require('../models/product');
 
 describe("Testing '/cancelOrder' API",()=> {
 

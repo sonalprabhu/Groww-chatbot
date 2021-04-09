@@ -9,18 +9,24 @@ const { getAnswerDynamicQuestion } = require('../dynamic_answer_mapper');
 describe("Testing '/get-answer-by-questionId' API",()=> {
 
     it(`tests '/get-answer-by-questionId' for static questions requiring no context`,async (done)=>{
-        let allFaqs = await Faq.find({}).exec();
+        let allFaqs = await Faq.find({}).lean().exec();
         allFaqs = allFaqs.filter((faq)=>{
-            for(const faqAnswerObj of faq.faqAnswer){
-                if(faqAnswerObj.faqIsDynamic){
+            for(const faqQuestionAnswerObj of faq.faqQuestionAnswer){
+                if(faqQuestionAnswerObj.faqIsDynamic){
                     return false;
                 }
             }
             return true;
         });
         const randomFaq = allFaqs[Math.floor(Math.random()*allFaqs.length)];
-        const randomQuestionPos = Math.floor(Math.random()*randomFaq.faqAnswer.length);
-        const expectedResponse = {'Answer': Array.from(randomFaq.faqAnswer[randomQuestionPos].faqAnswerText)};
+        const randomQuestionPos = Math.floor(Math.random()*randomFaq.faqQuestionAnswer.length);
+        let answerArr = randomFaq.faqQuestionAnswer[randomQuestionPos].faqAnswer;
+        answerArr = answerArr.map((a)=>{
+            const id = a._id.toString();
+            delete a._id;
+            return {_id: id,...a};
+        });
+        const expectedResponse = {'Answer': answerArr};
         const response = await supertest(app).get(`/get-answer-by-questionId/${randomFaq._id.toString()}/${randomQuestionPos}`);
         expect(response.status).toBe(200);
         expect(response.type).toBe('application/json');
@@ -29,10 +35,10 @@ describe("Testing '/get-answer-by-questionId' API",()=> {
     });
 
     it(`tests '/get-answer-by-questionId' for dynamic questions requiring context`,async (done)=>{
-        let allFaqs = await Faq.find({}).select('+faqAnswer.faqDynamicKey').exec();
+        let allFaqs = await Faq.find({}).select('+faqQuestionAnswer.faqDynamicKey').exec();
         allFaqs = allFaqs.filter((faq)=>{
-            for(const faqAnswerObj of faq.faqAnswer){
-                if(faqAnswerObj.faqIsDynamic){
+            for(const faqQuestionAnswerObj of faq.faqQuestionAnswer){
+                if(faqQuestionAnswerObj.faqIsDynamic){
                     return true;
                 }
             }
@@ -40,12 +46,12 @@ describe("Testing '/get-answer-by-questionId' API",()=> {
         });
         const randomFaq = allFaqs[Math.floor(Math.random()*allFaqs.length)];
         let idx=0;
-        for(;idx<randomFaq.faqAnswer.length;idx++){
-            if(randomFaq.faqAnswer[idx].faqIsDynamic){
+        for(;idx<randomFaq.faqQuestionAnswer.length;idx++){
+            if(randomFaq.faqQuestionAnswer[idx].faqIsDynamic){
                 break;
             }
         }
-        const unsealed = await Iron.unseal(randomFaq.faqAnswer[idx].faqDynamicKey,process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+        const unsealed = await Iron.unseal(randomFaq.faqQuestionAnswer[idx].faqDynamicKey,process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
         const sampleUser = await User.findOne({}).populate('userOrdersDocs').exec();
         const sampleOrder = sampleUser.userOrdersDocs[Math.floor(Math.random()*sampleUser.userOrdersDocs.length)];
         const sampleProductId = sampleOrder.products[0].toString();

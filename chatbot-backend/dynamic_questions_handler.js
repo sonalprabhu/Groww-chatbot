@@ -14,18 +14,20 @@ const dynamicQuestions =
                         Object.keys(orderFound.toJSON()).length === 0 || 
                         orderFound.userId.toString() !== context.user){
                         
-                        reject({'resCode': 404,'res': [`Order is invalid or obsolete`]});
+                        reject({'resCode': 404,'res': [{faqAnswerText: `Order is invalid or obsolete`,faqAnswerType: 'text'}]});
                     }
                     else if(orderFound.orderStatus !== 'Completed'){
-                        reject({'resCode': 403,'res': [`First complete the order to view similar products`]});
+                        reject({'resCode': 403,'res': [{faqAnswerText: `First complete the order to view similar products`,faqAnswerType: 'text'}]});
                     }
                     else{
                         Product.find({productCategory: orderFound.category}).exec(function(err,products){
                             if(err || products === null || products === undefined || products.length === 0){
-                                reject({'resCode':404,'res': [`No product of the similar category found`]});
+                                reject({'resCode':404,'res': [{faqAnswerText: `No product of the similar category found`,faqAnswerType: 'text'}]});
                             }
                             else{
-                                products = products.map((p)=> p.productName);
+                                products = products.map((p)=> {
+                                    return {faqAnswerText: p.productName,faqAnswerType: 'text'};
+                                });
                                 resolve(products);
                             }
                         })
@@ -33,7 +35,7 @@ const dynamicQuestions =
                 });
             }
             catch(err){
-                reject({'resCode':404,'res':'Query is invalid'});
+                reject({'resCode':404,'res':[{faqAnswerText: 'Query is invalid',faqAnswerType: 'text'}]});
             }
         });
     },
@@ -42,26 +44,39 @@ const dynamicQuestions =
             try{
                 Order.find({$and: [{userId: context.user},{orderStatus: 'Completed'},{products: mongoose.Types.ObjectId(context.product.toString())}]}).populate('productDocs').exec(function(err,orders){
                     if(err || orders === null || orders === undefined || orders.length === 0){
-                        resolve([`You don't have any previous stock holding on the asked product`]);
+                        resolve([{faqAnswerText: `You don't have any previous stock holding on the asked product`,faqAnswerType: 'text'}]);
                     }
                     else{
                         let nse = 0,bse = 0;
                         for(const order of orders){
-                            const matchedProducts = order.toJSON().productDocs.filter((productDoc)=>productDoc._id.toString() === context.product.toString());
-                            nse += matchedProducts.length*parseFloat(matchedProducts[0].productPrice.stockPrice.nse);
-                            bse += matchedProducts.length*parseFloat(matchedProducts[0].productPrice.stockPrice.bse);
+                            const allProductsOfOrder = order.toJSON().productDocs;
+                            for(let idx=0;idx<allProductsOfOrder.length;idx++){
+                                if(allProductsOfOrder[idx]._id.toString() === context.product.toString()){
+                                    nse += parseFloat(allProductsOfOrder[idx].productPrice.stockPrice.nse)*order.units[idx];
+                                    bse += parseFloat(allProductsOfOrder[idx].productPrice.stockPrice.bse)*order.units[idx];
+                                }
+                            }
                         }
                         if(nse===0 && bse===0){
-                            resolve([`You don't have any previous stock holding on the asked product`]);
+                            resolve([{faqAnswerText: `You don't have any previous stock holding on the asked product`,faqAnswerType: 'text'}]);
                         }
                         else{
-                            resolve([`NSE: Rs.${nse.toFixed(2)}`,`BSE: Rs.${bse.toFixed(2)}`]);
+                            resolve([
+                                {
+                                    faqAnswerText: `NSE: Rs.${nse.toFixed(2)}`,
+                                    faqAnswerType: 'text'
+                                },
+                                {
+                                    faqAnswerText: `BSE: Rs.${bse.toFixed(2)}`,
+                                    faqAnswerType: 'text'
+                                }
+                            ]);
                         }
                     }
                 })
             }
             catch(err){
-                resolve([`You don't have any previous stock holding on the asked product`]);
+                resolve([{faqAnswerText: `You don't have any previous stock holding on the asked product`,faqAnswerType: 'text'}]);
             }
         });
     },
@@ -70,7 +85,20 @@ const dynamicQuestions =
             try{
                 Order.find({$and: [{userId: context.user},{$or: [{orderStatus: 'Completed'},{orderStatus: 'Pending'}]},{products: mongoose.Types.ObjectId(context.product.toString())}]}).exec(function(err,orders){
                     if(err || orders === null || orders === undefined || orders.length === 0){
-                        resolve([`Sorry! you haven't used the asked product previously or your orders were cancelled which includes the product.`,`Buy the product to get more benefits.`,`Raise a ticket if you find above information incorrect.`]);
+                        resolve([
+                            {
+                                faqAnswerText: `Sorry! you haven't used the asked product previously or your orders were cancelled which includes the product.`,
+                                faqAnswerType: 'text'
+                            },
+                            {
+                                faqAnswerText: `Buy the product to get more benefits.`,
+                                faqAnswerType: 'text'
+                            },
+                            {
+                                faqAnswerText: `Raise a ticket if you find above information incorrect.`,
+                                faqAnswerType: 'text'
+                            }
+                        ]);
                     }
                     else{
                         let countCompleted = 0;
@@ -84,16 +112,42 @@ const dynamicQuestions =
                             }
                         }
                         if(countCompleted > 0){
-                            resolve([`Yes! you already have ${countCompleted} completed orders for the asked product.`]);
+                            resolve([{faqAnswerText: `Yes! you already have ${countCompleted} completed orders for the asked product.`,faqAnswerType: 'text'}]);
                         }
                         else{
-                            resolve([`No! you don't have any previously completed orders for the asked product.`,`You have ${countPending} pending orders for this product.`,`Move to orders page to place your order soon!`]);
+                            resolve([
+                                {
+                                    faqAnswerText: `No! you don't have any previously completed orders for the asked product.`,
+                                    faqAnswerType: 'text'
+                                },
+                                {
+                                    faqAnswerText: `You have ${countPending} pending orders for this product.`,
+                                    faqAnswerType: 'text'
+                                },
+                                {
+                                    faqAnswerText: `Move to orders page to place your order soon!`,
+                                    faqAnswerType: 'text'
+                                }
+                            ]);
                         } 
                     }  
                 });              
             }
             catch(err){
-                resolve([`Sorry! you haven't used the asked product previously or your orders were cancelled which includes the product.`,`Buy the product to get more benefits.`,`Raise a ticket if you find above information incorrect.`]);
+                resolve([
+                    {
+                        faqAnswerText: `Sorry! you haven't used the asked product previously or your orders were cancelled which includes the product.`,
+                        faqAnswerType: 'text'
+                    },
+                    {
+                        faqAnswerText: `Buy the product to get more benefits.`,
+                        faqAnswerType: 'text'
+                    },
+                    {
+                        faqAnswerText: `Raise a ticket if you find above information incorrect.`,
+                        faqAnswerType: 'text'
+                    }
+                ]);
             }
         });
     }
