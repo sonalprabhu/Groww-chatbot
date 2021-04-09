@@ -14,7 +14,6 @@ describe("Testing '/getOrderDetails' API",()=> {
         delete sampleOrder.productDocs;
         const sampleUser = sampleOrder.userId.toString();
         delete sampleOrder.userId;
-        delete sampleOrder.faqId;
         sampleOrder = {...sampleOrder,_id: sampleOrder._id.toString(),products: products};
         const response = await supertest(app).get(`/getOrderDetails/${sampleOrder._id}`).query({
             user: sampleUser,

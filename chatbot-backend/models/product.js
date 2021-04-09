@@ -30,19 +30,13 @@ const productSchema = new Schema({
     productCategory: {type: String},
     productPrice: {type: priceSchema},
     productName: {type: String},
-    faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],
+    productUrl: {type: String},
+    productMaxUnitsPerOrder: {type: Number}
 },{
     id: false,
     versionKey: false,
     toJSON: {virtuals: true},
     toObject: {virtuals: true},
-});
-
-productSchema.virtual('faqs',{
-    ref: 'Faq',
-    localField: 'faqId',
-    foreignField: '_id',
-    justOne: false,
 });
 
 exports.Product = mongoose.model('Product',productSchema,'products');

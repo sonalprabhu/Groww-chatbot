@@ -1,36 +1,17 @@
-const {Faq} = require('../models/faqs');
 const {User} = require('../models/user');
 const {Order} = require('../models/order');
-const {Product} = require('../models/product');
-const {app,fetchUserKycFaqs} = require('../app');
+const {Category} = require('../models/category');
+const {app,fetchUserKycFaqs,getFaqsFromCategory} = require('../app');
 const supertest = require('supertest');
 const mongoose = require('mongoose');
-const {productArr} = require('../data');
 
 describe("Testing '/order-specific-questions' API",()=> {
 
     it(`tests '/order-specific-questions', order is completed and valid user`,async (done) => {
         const completedOrders = await Order.find({orderStatus: 'Completed'}).populate('user').exec();
         const sampleOrder = completedOrders[Math.floor(Math.random()*completedOrders.length)];
-        let expectedFaqs = await Faq.find({faqCategoryPath: {$all: ['Orders','Completed']}}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        if(sampleOrder.user.userKyc.status !== 'Completed'){
-            let userKycFaqs = await Faq.find({faqCategoryPath: {$all: ['My Account','KYC']}}).exec();
-            userKycFaqs = userKycFaqs
-                            .flatMap((faqDoc)=>{
-                                const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                                    return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-                                });
-                                return faqResponse;      
-                            });
-            expectedFaqs = userKycFaqs.concat(expectedFaqs);
-        }
+        const orderStatusCategory = await Category.findOne({categoryName: 'Completed'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(sampleOrder.user)).concat(await getFaqsFromCategory(orderStatusCategory));
         const response = await supertest(app).get('/order-specific-questions').query({
             order: sampleOrder._id.toString(),
             user: sampleOrder.user._id.toString()
@@ -44,25 +25,8 @@ describe("Testing '/order-specific-questions' API",()=> {
     it(`tests '/order-specific-questions', order is cancelled and valid user`,async (done) => {
         const completedOrders = await Order.find({orderStatus: 'Cancelled'}).populate('user').exec();
         const sampleOrder = completedOrders[Math.floor(Math.random()*completedOrders.length)];
-        let expectedFaqs = await Faq.find({faqCategoryPath: {$all: ['Orders','Cancelled']}}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        if(sampleOrder.user.userKyc.status !== 'Completed'){
-            let userKycFaqs = await Faq.find({faqCategoryPath: {$all: ['My Account','KYC']}}).exec();
-            userKycFaqs = userKycFaqs
-                            .flatMap((faqDoc)=>{
-                                const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                                    return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-                                });
-                                return faqResponse;      
-                            });
-            expectedFaqs = userKycFaqs.concat(expectedFaqs);
-        }
+        const orderStatusCategory = await Category.findOne({categoryName: 'Cancelled'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(sampleOrder.user)).concat(await getFaqsFromCategory(orderStatusCategory));
         const response = await supertest(app).get('/order-specific-questions').query({
             order: sampleOrder._id.toString(),
             user: sampleOrder.user._id.toString()
@@ -76,25 +40,8 @@ describe("Testing '/order-specific-questions' API",()=> {
     it(`tests '/order-specific-questions', order is pending and valid user`,async (done) => {
         const completedOrders = await Order.find({orderStatus: 'Pending'}).populate('user').exec();
         const sampleOrder = completedOrders[Math.floor(Math.random()*completedOrders.length)];
-        let expectedFaqs = await Faq.find({faqCategoryPath: {$all: ['Orders','Pending']}}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        if(sampleOrder.user.userKyc.status !== 'Completed'){
-            let userKycFaqs = await Faq.find({faqCategoryPath: {$all: ['My Account','KYC']}}).exec();
-            userKycFaqs = userKycFaqs
-                            .flatMap((faqDoc)=>{
-                                const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                                    return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-                                });
-                                return faqResponse;      
-                            });
-            expectedFaqs = userKycFaqs.concat(expectedFaqs);
-        }
+        const orderStatusCategory = await Category.findOne({categoryName: 'Pending'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(sampleOrder.user)).concat(await getFaqsFromCategory(orderStatusCategory));
         const response = await supertest(app).get('/order-specific-questions').query({
             order: sampleOrder._id.toString(),
             user: sampleOrder.user._id.toString()

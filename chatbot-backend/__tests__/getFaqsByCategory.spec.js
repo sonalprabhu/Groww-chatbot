@@ -9,14 +9,38 @@ describe("Testing '/get-question-by-category' API",()=> {
     it(`tests '/get-question-by-category' , valid category Id and has no sub categories`,async (done)=>{
         const validCategories = await Category.find({hasSubCategory: false}).populate('faqs').exec();
         const sampleCategory = validCategories[Math.floor(Math.random()*validCategories.length)];
-        let expectedFaqs = await Faq.find({faqCategoryPath: sampleCategory.categoryName}).exec();
+        let expectedFaqs = await Faq.find({faqCategoryName: sampleCategory.categoryName}).exec();
         expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
         expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.filter((_,idx)=>(faqDoc.faqAnswer[idx].faqIsDynamic === false)).map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
+            const faqResponse = faqDoc.faqQuestionAnswer.filter((q)=>(q.faqIsDynamic === false)).map((q,idx)=>{
+                return {   
+                    QuestionId: faqDoc._id.toString(),
+                    QuestionPos: idx,
+                    QuestionText: q.faqQuestion,
+                    faqUpvoteCount: q.faqUpvoteCount,
+                    faqDownvoteCount: q.faqDownvoteCount
+                };
             });
             return faqResponse;
         });
+
+        expectedFaqs.sort((a,b)=>{
+            if((b.faqUpvoteCount - a.faqUpvoteCount)>0){
+              return 1;
+            }
+            else if((b.faqUpvoteCount - a.faqUpvoteCount)<0){
+              return -1;
+            }
+            else{
+              return (a.faqDownvoteCount-b.faqDownvoteCount);
+            }
+          });
+
+        expectedFaqs = expectedFaqs.map((q)=>{
+            delete q.faqUpvoteCount;
+            delete q.faqDownvoteCount;
+            return q;
+          });
         const response = await supertest(app).get(`/get-question-by-category/${sampleCategory._id.toString()}`);
         expect(response.status).toBe(200);
         expect(response.type).toBe('application/json');

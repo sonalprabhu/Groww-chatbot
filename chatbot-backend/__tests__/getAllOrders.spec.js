@@ -16,7 +16,6 @@ describe("Testing '/getAllOrders' API",()=> {
             order = order.toJSON();
             const products = productResponseMap(order.productDocs,order.category);
             delete order.productDocs;
-            delete order.faqId;
             delete order.userId;
             answers.push({...order,_id: order._id.toString(),products: products});
         }

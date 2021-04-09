@@ -6,20 +6,13 @@ const orderSchema = new Schema({
     orderDate: {type: String},
     category: {type: String},
     products: [{type: mongoose.Schema.Types.ObjectId,ref: 'Product'}],
-    userId: {type: mongoose.Schema.Types.ObjectId,ref: 'User'},
-    faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],
+    units: [{type: Number}],
+    userId: {type: mongoose.Schema.Types.ObjectId,ref: 'User'}
 },{
     id: false,
     versionKey: false,
     toJSON: {virtuals: true},
     toObject: {virtuals: true},
-})
-
-orderSchema.virtual('faqs',{
-    ref: 'Faq',
-    localField: 'faqId',
-    foreignField: '_id',
-    justOne: false,
 });
 
 orderSchema.virtual('user',{

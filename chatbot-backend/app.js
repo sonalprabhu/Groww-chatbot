@@ -23,6 +23,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
+  useFindAndModify: false,
 });
 
 mongoose.connection.once("open", async () => {
@@ -38,42 +39,62 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-// function flattenQuestionResponse(faqArr){
-//     let response = [];
-//     for(const faqElem of faqArr){
-//         for(let idx=0;idx<faqElem.QuestionText.length;idx++){
-//             response.push({...faqElem,QuestionPos:idx,QuestionText: faqElem.QuestionText[idx]});
-//         }
-//     }
-//     return response;
-// }
-function fetchUserKycFaqs(userFound) {
-  if (
-    userFound !== null &&
-    userFound !== undefined &&
-    Object.keys(userFound.toJSON()).length !== 0 &&
-    userFound.userKyc.status !== "Completed"
-  ) {
-    const faqs = userFound.faqs
-      .filter(
-        (faqDoc) =>
-          JSON.stringify(faqDoc.faqCategoryPath) ===
-          JSON.stringify(["My Account", "KYC"])
-      )
-      .flatMap((faqDoc) => {
-        const faqResponse = faqDoc.faqQuestionText.map((q, idx) => {
-          return {
-            QuestionId: faqDoc._id.toString(),
-            QuestionPos: idx,
-            QuestionText: q,
-          };
-        });
-        return faqResponse;
-      });
-    return faqs;
-  } else {
-    return [];
+async function getFaqsFromCategory(categoryDoc){
+  categoryDoc = await Category.populate(categoryDoc,{path: 'subCategories'});
+  let queue = [categoryDoc];
+  let faqs = [];
+  while(queue.length !== 0){
+    let s = queue.shift();
+    if(!s.hasSubCategory){
+      s = await Category.populate(s,{path: 'faqs'});
+      for(const faqDoc of s.faqs){
+        faqs.push(faqDoc);
+      }
+    }
+    else{
+      let subCategoriesDocs = s.subCategories;
+      for(const subCategoryDoc of subCategoriesDocs){
+        queue.push(subCategoryDoc);
+      }
+    }
   }
+  faqs = faqs.flatMap((faqDoc)=>{
+    const faqResponse = faqDoc.faqQuestionAnswer.map((q,idx) => {
+        return {
+                QuestionId: faqDoc._id.toString(),
+                QuestionPos: idx,
+                QuestionText: q.faqQuestion,
+                faqUpvoteCount: q.faqUpvoteCount,
+                faqDownvoteCount: q.faqDownvoteCount
+              };
+          });
+    return faqResponse;
+  });
+  faqs.sort((a,b)=>{
+    if((b.faqUpvoteCount - a.faqUpvoteCount)>0){
+      return 1;
+    }
+    else if((b.faqUpvoteCount - a.faqUpvoteCount)<0){
+      return -1;
+    }
+    else{
+      return (a.faqDownvoteCount-b.faqDownvoteCount);
+    }
+  });
+  faqs = faqs.map((q)=>{
+    delete q.faqUpvoteCount;
+    delete q.faqDownvoteCount;
+    return q;
+  });
+  return faqs;
+}
+
+async function fetchUserKycFaqs(userFound) {
+  if(userFound !== null && userFound !== undefined && Object.keys(userFound.toJSON()).length !==0 && userFound.userKyc.status !== "Completed"){
+    const kycCategory = await Category.findOne({categoryName: 'KYC'}).exec();
+    return await getFaqsFromCategory(kycCategory);
+  }
+  return [];
 }
 
 function productResponseMap(products, category) {
@@ -84,7 +105,7 @@ function productResponseMap(products, category) {
       {
         if (products instanceof Array) {
           filteredProducts = products.map((p) => {
-            const { faqId, productPrice, ...fp } = p;
+            const { productPrice, ...fp } = p;
             const { _id, ...productPriceExceptId } = p.productPrice.stockPrice;
             return {
               ...fp,
@@ -93,7 +114,7 @@ function productResponseMap(products, category) {
             };
           });
         } else {
-          const { faqId, productPrice, ...fp } = products;
+          const { productPrice, ...fp } = products;
           const {
             _id,
             ...productPriceExceptId
@@ -110,7 +131,7 @@ function productResponseMap(products, category) {
       {
         if (products instanceof Array) {
           filteredProducts = products.map((p) => {
-            const { faqId, productPrice, ...fp } = p;
+            const { productPrice, ...fp } = p;
             const { _id, ...productPriceExceptId } = p.productPrice.fundReturns;
             return {
               ...fp,
@@ -119,7 +140,7 @@ function productResponseMap(products, category) {
             };
           });
         } else {
-          const { faqId, productPrice, ...fp } = products;
+          const { productPrice, ...fp } = products;
           const {
             _id,
             ...productPriceExceptId
@@ -136,7 +157,7 @@ function productResponseMap(products, category) {
       {
         if (products instanceof Array) {
           filteredProducts = products.map((p) => {
-            const { faqId, productPrice, ...fp } = p;
+            const { productPrice, ...fp } = p;
             const { _id, ...productPriceExceptId } = p.productPrice.fd;
             return {
               ...fp,
@@ -145,7 +166,7 @@ function productResponseMap(products, category) {
             };
           });
         } else {
-          const { faqId, productPrice, ...fp } = products;
+          const { productPrice, ...fp } = products;
           const { _id, ...productPriceExceptId } = products.productPrice.fd;
           filteredProducts = {
             ...fp,
@@ -159,7 +180,7 @@ function productResponseMap(products, category) {
       {
         if (products instanceof Array) {
           filteredProducts = products.map((p) => {
-            const { faqId, productPrice, ...fp } = p;
+            const { productPrice, ...fp } = p;
             return {
               ...fp,
               _id: fp._id.toString(),
@@ -167,7 +188,7 @@ function productResponseMap(products, category) {
             };
           });
         } else {
-          const { faqId, productPrice, ...fp } = products;
+          const { productPrice, ...fp } = products;
           filteredProducts = {
             ...fp,
             _id: fp._id.toString(),
@@ -337,7 +358,6 @@ app.get("/getAllOrders", async (req, res) => {
         order = order.toObject();
         const products = productResponseMap(order.productDocs, order.category);
         delete order.productDocs;
-        delete order.faqId;
         delete order.userId;
         return { ...order, products };
       });
@@ -366,7 +386,6 @@ app.get("/getOrderDetails/:orderId", async (req, res) => {
       order = order.toJSON();
       const products = productResponseMap(order.productDocs, order.category);
       delete order.productDocs;
-      delete order.faqId;
       delete order.userId;
       res.status(200).json({ ...order, products }); //need for the filter on the fileds to be returned
     } else {
@@ -378,7 +397,7 @@ app.get("/getOrderDetails/:orderId", async (req, res) => {
 });
 
 app.post("/placeOrder", async (req, res) => {
-  //orderStatus will be in Not completed state
+  //orderStatus will be in pending state
 
   const updateUserPromise = (userId, orderId) => {
     return new Promise((resolve, reject) => {
@@ -404,18 +423,13 @@ app.post("/placeOrder", async (req, res) => {
       res.sendStatus(404);
     } else {
       const orderFromFrontend = req.body;
-      let faqsToBeLinked = await Faq.find({
-        faqCategoryPath: { $all: ["Orders", "Pending"] },
-      }).exec();
-      faqsToBeLinked = faqsToBeLinked.map((faq) => faq._id);
-      const newOrder = new Order({
+      const newOrder = new Order({//max_units_per_order should be managed from frontend
         orderStatus: "Pending",
-        faqId: faqsToBeLinked,
         userId,
         ...orderFromFrontend,
       });
       const newOrderDoc = await newOrder.save();
-      const linkOrderToUser = await updateUserPromise(userId, newOrderDoc._id);
+      await updateUserPromise(userId, newOrderDoc._id);
       res.status(201).json({ orderId: newOrderDoc._id.toString() });
     }
   } catch (err) {
@@ -424,15 +438,14 @@ app.post("/placeOrder", async (req, res) => {
 });
 
 app.patch("/confirmOrder", async (req, res) => {
-  const updateOrderPromise = (orderDetails, faqsToBeLinked) => {
+  const updateOrderPromise = (orderDetails) => {
     return new Promise((resolve, reject) => {
       Order.updateOne(
         { _id: orderDetails.orderId },
         {
           $set: {
             orderStatus: "Completed",
-            orderDate: orderDetails.orderDate,
-            faqId: faqsToBeLinked,
+            orderDate: orderDetails.orderDate
           },
         }
       )
@@ -457,11 +470,7 @@ app.patch("/confirmOrder", async (req, res) => {
       res.sendStatus(404);
     } else {
       const orderDetails = req.body;
-      let faqsToBeLinked = await Faq.find({
-        faqCategoryPath: { $all: ["Orders", "Completed"] },
-      }).exec();
-      faqsToBeLinked = faqsToBeLinked.map((faq) => faq._id);
-      let updateOrder = await updateOrderPromise(orderDetails, faqsToBeLinked);
+      await updateOrderPromise(orderDetails);
       res.sendStatus(204);
     }
   } catch (err) {
@@ -470,15 +479,14 @@ app.patch("/confirmOrder", async (req, res) => {
 });
 
 app.patch("/cancelOrder", async (req, res) => {
-  const updateOrderPromise = (orderDetails, faqsToBeLinked) => {
+  const updateOrderPromise = (orderDetails) => {
     return new Promise((resolve, reject) => {
       Order.updateOne(
         { _id: orderDetails.orderId },
         {
           $set: {
             orderStatus: "Cancelled",
-            orderDate: orderDetails.orderDate,
-            faqId: faqsToBeLinked,
+            orderDate: orderDetails.orderDate
           },
         }
       )
@@ -503,11 +511,7 @@ app.patch("/cancelOrder", async (req, res) => {
       res.sendStatus(404);
     } else {
       const orderDetails = req.body;
-      let faqsToBeLinked = await Faq.find({
-        faqCategoryPath: { $all: ["Orders", "Cancelled"] },
-      }).exec();
-      faqsToBeLinked = faqsToBeLinked.map((faq) => faq._id);
-      let updateOrder = await updateOrderPromise(orderDetails, faqsToBeLinked);
+      await updateOrderPromise(orderDetails);
       res.sendStatus(204);
     }
   } catch (err) {
@@ -716,331 +720,108 @@ app.get("/getAllCategoryPaths", async (req, res) => {
   res.status(200).json({ allCategoriesPaths: getAllPaths() });
 });
 
-// app.delete('/cancelOrder/:orderId',async (req,res)=>{
-//     const updateOrdersUserPromise = (userId,orderId) => {
-//         return new Promise((resolve,reject)=>{
-//             User.updateOne({_id: userId},{$pull: {userOrders: orderId}}).exec().then((res)=>{
-//                 resolve({
-//                     ...res
-//                 })
-//             }).catch((err)=>{
-//                 reject({
-//                     ...err
-//                 })
-//             })
-//         })
-//     }
-//     try{
-//         const orderId = req.params.orderId;
-//         const order = await Order.findById(orderId).exec();
-//         if(order === null || order === undefined || Object.keys(order).length === 0){
-//             res.sendStatus(404);
-//         }
-//         else if(order.orderStatus === 'Completed'){
-//             res.sendStatus(403);
-//         }
-//         else{
-//             if(order.userId.toString() === req.query.user.toString()){
-//                 const updateUserOrders = await updateOrdersUserPromise(order.userId,orderId);
-//                 let deleteOrder = await Order.deleteOne({_id: orderId}).exec();
-//                 res.sendStatus(200);
-//             }
-//             else{
-//                 res.sendStatus(403);
-//             }
-//         }
-//     }
-//     catch(err){
-//         res.sendStatus(404);
-//     }
-// });
-
 /**Chatbot Specific Routes */
 app.get("/search-on-category", async (req, res) => {
   const categoryName = req.query.categoryName;
   const userId = req.query.user;
-  const checkValidCategory =
-    categoryName === null || categoryName === undefined
-      ? []
-      : ["Stocks", "FDs", "Mutual Funds", "Gold"].filter(
-          (c) => c.toLowerCase() === categoryName.toString().toLowerCase()
-        );
-  if (checkValidCategory.length === 0) {
-    res.sendStatus(404);
-  } else {
-    try {
-      Faq.find({ faqCategoryPath: categoryName }).exec(function (err, faqDocs) {
-        if (
-          err ||
-          faqDocs === null ||
-          faqDocs === undefined ||
-          faqDocs.length === 0
-        ) {
-          res.sendStatus(404);
-        } else {
-          let faqs = [];
-          User.findById(userId)
-            .populate("faqs")
-            .exec(function (_, userFound) {
-              // if(userFound !== null && userFound !==null && Object.keys(userFound.toJSON()).length !== 0 && userFound.userKyc.status !== 'Completed'){
-              //     faqs = userFound.faqs.filter((faqDoc)=>(JSON.stringify(faqDoc.faqCategoryPath) === JSON.stringify(['My Account','KYC'])))
-              //                         .flatMap((faqDoc)=>{
-              //                             const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-              //                                 return {QuestionId: faqDoc._id,QuestionPos: idx,QuestionText: q};
-              //                             });
-              //                             return faqResponse;
-              //                         })
-              // }
-              faqs = fetchUserKycFaqs(userFound);
-              const results = Promise.all(
-                faqDocs.map((faqDoc) => {
-                  const faqResponse = faqDoc.faqQuestionText.map((q, idx) => {
-                    return {
-                      QuestionId: faqDoc._id,
-                      QuestionPos: idx,
-                      QuestionText: q,
-                    };
-                  });
-                  faqs.push(...faqResponse);
-                })
-              );
-
-              results
-                .then((_) => res.status(200).json(faqs))
-                .catch((_) => res.sendStatus(404));
-            });
-        }
-      });
-    } catch (err) {
-      res.sendStatus(404);
+  try{
+    const validCategories = ["Stocks", "FDs", "Mutual Funds", "Gold"];
+    const checkValidCategory = validCategories.filter((c)=>c.toLowerCase() === categoryName.toString().toLowerCase());
+    if(checkValidCategory.length === 0){
+      throw new Error("Invalid category name");
     }
+    const categoryDoc = await Category.findOne({categoryName: categoryName.toString()}).exec();
+    const userDoc = await User.findById(userId).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      res.status(200).json(await getFaqsFromCategory(categoryDoc));
+    }
+    else{
+      const response = (await fetchUserKycFaqs(userDoc)).concat(await getFaqsFromCategory(categoryDoc));
+      res.status(200).json(response);
+    }
+  }
+  catch(err){
+    res.sendStatus(404);
   }
 });
 
 app.get("/user-specific-order-details", async (req, res) => {
   const userId = req.query.user;
-  User.findById(userId)
-    .populate("faqs")
-    .exec(function (err, userFound) {
-      if (
-        err ||
-        userFound === null ||
-        userFound === undefined ||
-        Object.keys(userFound.toJSON()).length === 0
-      ) {
-        res.sendStatus(404);
-      } else {
-        let faqs = fetchUserKycFaqs(userFound);
-        Faq.find({ faqCategoryPath: { $all: ["Orders", "General"] } }).exec(
-          function (err, faqsFound) {
-            if (
-              err ||
-              faqsFound === null ||
-              faqsFound === undefined ||
-              faqsFound.length === 0
-            ) {
-              res.sendStatus(404);
-            } else {
-              const results = Promise.all(
-                faqsFound.map((faqDoc) => {
-                  const faqResponse = faqDoc.faqQuestionText.map((q, idx) => {
-                    return {
-                      QuestionId: faqDoc._id,
-                      QuestionPos: idx,
-                      QuestionText: q,
-                    };
-                  });
-                  faqs.push(...faqResponse);
-                })
-              );
-
-              results
-                .then((_) => res.status(200).json(faqs))
-                .catch((_) => res.sendStatus(404));
-            }
-          }
-        );
-      }
-    });
+  try{
+    const userDoc = await User.findById(userId).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      throw new Error("Invalid user details");
+    }
+    const orderGeneralCategory = await Category.findOne({categoryName: 'General'}).exec();
+    const response = (await fetchUserKycFaqs(userDoc)).concat(await getFaqsFromCategory(orderGeneralCategory));
+    res.status(200).json(response);
+  }
+  catch(err){
+    res.sendStatus(404);
+  }
 });
 
 app.get("/user-account-questions", async (req, res) => {
   const userId = req.query.user;
-  if (userId === null || userId === undefined) {
+  try{
+    const userDoc = await User.findById(userId).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      throw new Error("Invalid user details");
+    }
+    const myAccountCategory = await Category.findOne({categoryName: 'My Account'}).exec();
+    res.status(200).json(await getFaqsFromCategory(myAccountCategory));
+  }
+  catch(err){
     res.sendStatus(404);
-  } else {
-    User.findById(userId)
-      .populate("faqs")
-      .exec(function (err, userFound) {
-        if (
-          err ||
-          userFound === null ||
-          userFound === undefined ||
-          Object.keys(userFound.toJSON()).length === 0
-        ) {
-          res.sendStatus(404);
-        } else {
-          let faqs = [];
-          const results = Promise.all(
-            userFound.faqs.map((faqDoc) => {
-              const faqResponse = faqDoc.faqQuestionText.map((q, idx) => {
-                return {
-                  QuestionId: faqDoc._id,
-                  QuestionPos: idx,
-                  QuestionText: q,
-                };
-              });
-              faqs.push(...faqResponse);
-            })
-          );
-
-          results
-            .then((_) => res.status(200).json(faqs))
-            .catch((_) => res.sendStatus(404));
-        }
-      });
   }
 });
 
 app.get("/product-specific-questions", async (req, res) => {
   const userId = req.query.user;
   const productId = req.query.product;
-  if (productId === null || productId === undefined) {
+  try{
+    const productDoc = await Product.findById(productId).exec();
+    if(productDoc === null || productDoc === undefined || Object.keys(productDoc.toJSON()).length === 0){
+      throw new Error("Invalid product details");
+    }
+    const userDoc = await User.findById(userId).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      const productGeneralCategory = await Category.findOne({categoryName: (productDoc.productName+' General')}).exec();
+      res.status(200).json(await getFaqsFromCategory(productGeneralCategory));
+    }
+    else{
+      const productCategory = await Category.findOne({categoryName: productDoc.productName}).exec();
+      const response = (await fetchUserKycFaqs(userDoc)).concat(await getFaqsFromCategory(productCategory));
+      res.status(200).json(response);
+    }
+  }
+  catch(err){
     res.sendStatus(404);
-  } else {
-    Product.findById(productId)
-      .populate("faqs")
-      .exec(function (err, productFound) {
-        if (
-          err ||
-          productFound === null ||
-          productFound === undefined ||
-          Object.keys(productFound.toJSON()).length === 0
-        ) {
-          res.sendStatus(404);
-        } else {
-          productFound = productFound.toJSON();
-          let faqs = [];
-          User.findById(userId)
-            .populate("faqs")
-            .exec(function (err, userFound) {
-              if (
-                err ||
-                userFound === null ||
-                userFound === undefined ||
-                Object.keys(userFound.toJSON()).length === 0
-              ) {
-                productFound.faqs = productFound.faqs.filter(
-                  (faqDoc) =>
-                    faqDoc.faqCategoryPath[
-                      faqDoc.faqCategoryPath.length - 1
-                    ] ===
-                    productFound.productName + " General"
-                );
-              }
-              faqs = fetchUserKycFaqs(userFound);
-              const results = Promise.all(
-                productFound.faqs.map((faqDoc) => {
-                  const faqResponse = faqDoc.faqQuestionText.map((q, idx) => {
-                    return {
-                      QuestionId: faqDoc._id,
-                      QuestionPos: idx,
-                      QuestionText: q,
-                    };
-                  });
-                  faqs.push(...faqResponse);
-                })
-              );
-
-              results
-                .then((_) => res.status(200).json(faqs))
-                .catch((_) => res.sendStatus(404));
-            });
-        }
-      });
   }
 });
 
 app.get("/order-specific-questions", async (req, res) => {
   const userId = req.query.user;
   const orderId = req.query.order;
-  if (
-    userId === null ||
-    orderId === null ||
-    userId === undefined ||
-    orderId === undefined
-  ) {
-    res.sendStatus(404);
-  } else {
-    try {
-      User.findOne({
-        $and: [
-          { _id: userId },
-          { userOrders: mongoose.Types.ObjectId(orderId.toString()) },
-        ],
-      })
-        .populate("faqs")
-        .exec(function (err, userFound) {
-          if (
-            err ||
-            userFound === null ||
-            userFound === undefined ||
-            Object.keys(userFound.toJSON()).length === 0
-          ) {
-            res.sendStatus(404);
-          } else {
-            Order.findById(orderId)
-              .populate("faqs")
-              .exec(function (err, orderFound) {
-                if (
-                  err ||
-                  orderFound === null ||
-                  orderFound === undefined ||
-                  Object.keys(orderFound.toJSON()).length === 0
-                ) {
-                  res.sendStatus(404);
-                } else {
-                  let faqs = fetchUserKycFaqs(userFound);
-                  // if(userFound.userKyc.status !== 'Completed'){
-                  //     faqs = userFound.faqs.filter((faqDoc)=>(JSON.stringify(faqDoc.faqCategoryPath) === JSON.stringify(['My Account','KYC'])))
-                  //                 .flatMap((faqDoc)=>{
-                  //                     const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                  //                         return {QuestionId: faqDoc._id,QuestionPos: idx,QuestionText: q};
-                  //                     });
-                  //                     return faqResponse;
-                  //                 })
-                  // }
-                  const results = Promise.all(
-                    orderFound.faqs.map((faqDoc) => {
-                      const faqResponse = faqDoc.faqQuestionText.map(
-                        (q, idx) => {
-                          return {
-                            QuestionId: faqDoc._id,
-                            QuestionPos: idx,
-                            QuestionText: q,
-                          };
-                        }
-                      );
-                      faqs.push(...faqResponse);
-                    })
-                  );
-
-                  results
-                    .then((_) => res.status(200).json(faqs))
-                    .catch((_) => res.sendStatus(404));
-                }
-              });
-          }
-        });
-    } catch (err) {
-      res.sendStatus(404);
+  try{
+    const userDoc = await User.findOne({$and: [{_id: userId},{userOrders: mongoose.Types.ObjectId(orderId.toString())}]}).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      throw new Error("Invalid user details or orderId not in userId");
     }
+    const orderDoc = await Order.findById(orderId).exec();
+    if(orderDoc === null || orderDoc === undefined || Object.keys(orderDoc.toJSON()).length === 0){
+      throw new Error("Inavlid order details");
+    }
+    const orderStatusCategory = await Category.findOne({categoryName: orderDoc.orderStatus}).exec();
+    const response = (await fetchUserKycFaqs(userDoc)).concat(await getFaqsFromCategory(orderStatusCategory));
+    res.status(200).json(response);
+  }
+  catch(err){
+    res.sendStatus(404);
   }
 });
 
-app.get(
-  "/get-answer-by-questionId/:questionId/:questionPos",
-  async (req, res) => {
+app.get("/get-answer-by-questionId/:questionId/:questionPos",async (req, res) => {
     const questionId = req.params.questionId.toString();
     const questionPos = parseInt(req.params.questionPos);
     const context = req.query;
@@ -1054,19 +835,20 @@ app.get(
     } else {
       try {
         Faq.findById(questionId)
-          .select("+faqAnswer.faqDynamicKey")
+          .select("+faqQuestionAnswer.faqDynamicKey")
+          .lean()
           .exec(function (err, faqFound) {
             if (
               err ||
               faqFound === null ||
               faqFound === undefined ||
-              Object.keys(faqFound.toJSON()).length === 0
+              Object.keys(faqFound).length === 0
             ) {
               res.sendStatus(404);
             } else {
-              if (faqFound.faqAnswer[questionPos].faqIsDynamic) {
+              if (faqFound.faqQuestionAnswer[questionPos].faqIsDynamic) {
                 Iron.unseal(
-                  faqFound.faqAnswer[questionPos].faqDynamicKey,
+                  faqFound.faqQuestionAnswer[questionPos].faqDynamicKey,
                   process.env.DYNAMIC_ANSWER_SECRET,
                   Iron.defaults
                 )
@@ -1081,7 +863,7 @@ app.get(
                         ) {
                           res
                             .status(404)
-                            .json({ Answer: "Unable to fetch anwer!" });
+                            .json({ Answer: [{faqAnswerText: "Unable to fetch anwer!",faqAnswerType: "text"}]});
                         } else {
                           res.status(200).json({ Answer: answer });
                         }
@@ -1091,13 +873,13 @@ app.get(
                       );
                   })
                   .catch((err) =>
-                    res.status(404).json({ Answer: "Unable to fetch anwer!" })
+                    res.status(404).json({ Answer: [{faqAnswerText: "Unable to fetch anwer!",faqAnswerType: "text"}]})
                   );
               } else {
                 res
                   .status(200)
                   .json({
-                    Answer: faqFound.faqAnswer[questionPos].faqAnswerText,
+                    Answer: faqFound.faqQuestionAnswer[questionPos].faqAnswer,
                   });
               }
             }
@@ -1193,15 +975,17 @@ app.get("/get-question-by-category/:categoryId", async (req, res) => {
           let faqs = [];
           const results = Promise.all(
             categoryFound.faqs.map((faqDoc) => {
-              const faqResponse = faqDoc.faqQuestionText
+              const faqResponse = faqDoc.faqQuestionAnswer
                 .filter(
-                  (_, idx) => faqDoc.faqAnswer[idx].faqIsDynamic === false
+                  (q) => q.faqIsDynamic === false
                 )
                 .map((q, idx) => {
                   return {
                     QuestionId: faqDoc._id,
                     QuestionPos: idx,
-                    QuestionText: q,
+                    QuestionText: q.faqQuestion,
+                    faqUpvoteCount: q.faqUpvoteCount,
+                    faqDownvoteCount: q.faqDownvoteCount
                   };
                 });
               faqs.push(...faqResponse);
@@ -1209,7 +993,24 @@ app.get("/get-question-by-category/:categoryId", async (req, res) => {
           );
 
           results
-            .then((_) => res.status(200).json(faqs))
+            .then((_) => {
+              faqs = faqs.sort((a,b)=>{
+                                if((b.faqUpvoteCount - a.faqUpvoteCount)>0){
+                                  return 1;
+                                }
+                                else if((b.faqUpvoteCount - a.faqUpvoteCount)<0){
+                                  return -1;
+                                }
+                                else{
+                                  return (a.faqDownvoteCount-b.faqDownvoteCount);
+                                }
+                      }).map((q)=>{
+                        delete q.faqUpvoteCount;
+                        delete q.faqDownvoteCount;
+                        return q;
+              });
+              res.status(200).json(faqs)
+            })
             .catch((_) => res.sendStatus(404));
         }
       });
@@ -1218,6 +1019,37 @@ app.get("/get-question-by-category/:categoryId", async (req, res) => {
   }
 });
 
+app.patch("/increaseUpvoteCount/:questionId/:questionPos",async (req,res)=>{
+  const faqId = req.params.questionId.toString();
+  const faqPos = parseInt(req.params.questionPos);
+  try{
+    const faqDoc = await Faq.findByIdAndUpdate(faqId,{$inc: {[`faqQuestionAnswer.${faqPos}.faqUpvoteCount`]: 1}},{new: true}).exec();
+    if(faqDoc === null || faqDoc === undefined || Object.keys(faqDoc.toJSON()).length === 0){
+      throw new Error("Invalid faq details");
+    }
+    res.sendStatus(204);
+  }
+  catch(err){
+    res.sendStatus(404);
+  }
+});
+
+app.patch("/increaseDownvoteCount/:questionId/:questionPos",async (req,res)=>{
+  const faqId = req.params.questionId.toString();
+  const faqPos = parseInt(req.params.questionPos);
+  try{
+    const faqDoc = await Faq.findByIdAndUpdate(faqId,{$inc: {[`faqQuestionAnswer.${faqPos}.faqDownvoteCount`]: 1}},{new: true}).exec();
+    if(faqDoc === null || faqDoc === undefined || Object.keys(faqDoc.toJSON()).length === 0){
+      throw new Error("Invalid faq details");
+    }
+    res.sendStatus(204);
+  }
+  catch(err){
+    res.sendStatus(404);
+  }
+});
+
 exports.app = app;
+exports.getFaqsFromCategory = getFaqsFromCategory;
 exports.fetchUserKycFaqs = fetchUserKycFaqs;
 exports.productResponseMap = productResponseMap;

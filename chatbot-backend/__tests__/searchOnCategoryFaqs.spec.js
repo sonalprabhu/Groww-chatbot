@@ -1,20 +1,14 @@
-const {Faq} = require('../models/faqs');
+const {Category} = require('../models/category');
 const {User} = require('../models/user');
-const {app,fetchUserKycFaqs} = require('../app');
+const {app,fetchUserKycFaqs,getFaqsFromCategory} = require('../app');
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 
 describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Mutual Funds' and no user information`,async (done)=>{
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Mutual Funds'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Mutual Funds'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Mutual Funds'
         });
@@ -26,14 +20,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Mutual Funds' and KYC completed user`,async (done)=>{
         const kycUsers = await User.find({'userKyc.status': 'Completed'}).exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Mutual Funds'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Mutual Funds'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Mutual Funds',
             user: kycUsers[0]._id.toString(),
@@ -46,15 +34,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Mutual Funds' and non-KYC user`,async (done)=>{
         const nonKycUsers = await User.find({'userKyc.status': 'Not completed'}).populate('faqs').exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Mutual Funds'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        expectedFaqs = fetchUserKycFaqs(nonKycUsers[0]).concat(expectedFaqs);
+        const categoryDoc = await Category.findOne({categoryName: 'Mutual Funds'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(nonKycUsers[0])).concat(await getFaqsFromCategory(categoryDoc));
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Mutual Funds',
             user: nonKycUsers[0]._id.toString(),
@@ -66,14 +47,8 @@ describe("Testing '/search-on-category' API",()=> {
     });
 
     it(`tests '/search-on-category' and categoryName as 'Stocks' and no user information`,async (done)=>{
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Stocks'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Stocks'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Stocks'
         });
@@ -85,14 +60,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Stocks' and KYC completed user`,async (done)=>{
         const kycUsers = await User.find({'userKyc.status': 'Completed'}).exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Stocks'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Stocks'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Stocks',
             user: kycUsers[0]._id.toString(),
@@ -105,15 +74,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Stocks' and non-KYC user`,async (done)=>{
         const nonKycUsers = await User.find({'userKyc.status': 'Not completed'}).populate('faqs').exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Stocks'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        expectedFaqs = fetchUserKycFaqs(nonKycUsers[0]).concat(expectedFaqs);
+        const categoryDoc = await Category.findOne({categoryName: 'Stocks'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(nonKycUsers[0])).concat(await getFaqsFromCategory(categoryDoc)); 
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Stocks',
             user: nonKycUsers[0]._id.toString(),
@@ -125,14 +87,8 @@ describe("Testing '/search-on-category' API",()=> {
     });
 
     it(`tests '/search-on-category' and categoryName as 'Gold' and no user information`,async (done)=>{
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Gold'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Gold'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Gold'
         });
@@ -144,14 +100,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Gold' and KYC completed user`,async (done)=>{
         const kycUsers = await User.find({'userKyc.status': 'Completed'}).exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Gold'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'Gold'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Gold',
             user: kycUsers[0]._id.toString(),
@@ -164,15 +114,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'Gold' and non-KYC user`,async (done)=>{
         const nonKycUsers = await User.find({'userKyc.status': 'Not completed'}).populate('faqs').exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'Gold'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        expectedFaqs = fetchUserKycFaqs(nonKycUsers[0]).concat(expectedFaqs);
+        const categoryDoc = await Category.findOne({categoryName: 'Gold'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(nonKycUsers[0])).concat(await getFaqsFromCategory(categoryDoc)); 
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'Gold',
             user: nonKycUsers[0]._id.toString(),
@@ -184,14 +127,8 @@ describe("Testing '/search-on-category' API",()=> {
     });
 
     it(`tests '/search-on-category' and categoryName as 'FDs' and no user information`,async (done)=>{
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'FDs'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'FDs'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'FDs'
         });
@@ -203,14 +140,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'FDs' and KYC completed user`,async (done)=>{
         const kycUsers = await User.find({'userKyc.status': 'Completed'}).exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'FDs'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
+        const categoryDoc = await Category.findOne({categoryName: 'FDs'}).exec();
+        const expectedFaqs = await getFaqsFromCategory(categoryDoc);
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'FDs',
             user: kycUsers[0]._id.toString(),
@@ -223,15 +154,8 @@ describe("Testing '/search-on-category' API",()=> {
 
     it(`tests '/search-on-category' and categoryName as 'FDs' and non-KYC user`,async (done)=>{
         const nonKycUsers = await User.find({'userKyc.status': 'Not completed'}).populate('faqs').exec();
-        let expectedFaqs = await Faq.find({faqCategoryPath: 'FDs'}).exec();
-        expectedFaqs = expectedFaqs.map((faq)=>faq.toJSON());
-        expectedFaqs = expectedFaqs.flatMap((faqDoc)=>{
-            const faqResponse = faqDoc.faqQuestionText.map((q,idx)=>{
-                return {QuestionId: faqDoc._id.toString(),QuestionPos: idx,QuestionText: q};
-            });
-            return faqResponse;
-        });
-        expectedFaqs = fetchUserKycFaqs(nonKycUsers[0]).concat(expectedFaqs);
+        const categoryDoc = await Category.findOne({categoryName: 'FDs'}).exec();
+        const expectedFaqs = (await fetchUserKycFaqs(nonKycUsers[0])).concat(await getFaqsFromCategory(categoryDoc));
         const response = await supertest(app).get('/search-on-category').query({
             categoryName: 'FDs',
             user: nonKycUsers[0]._id.toString(),
