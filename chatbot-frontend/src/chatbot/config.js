@@ -1,5 +1,5 @@
 import { createChatBotMessage} from "react-chatbot-kit";
-import FAQ from '../components/FAQ';
+import FAQ from '../chatbot-widgets/FAQ';
 
  const config =
  {
