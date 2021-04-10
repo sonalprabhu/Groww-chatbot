@@ -28,7 +28,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 mongoose.connection.once("open", async () => {
   console.log("connected to mongodb");
-  populateBackend();//this function call to be used only when db clean up or refilling of data required.
+  //populateBackend();//this function call to be used only when db clean up or refilling of data required.
 });
 const corsOptions = {
   origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
@@ -299,6 +299,7 @@ app.get("/getUserDetails/:userId", async (req, res) => {
       userMob: user.userMob,
       userMaritalStatus: user.userMaritalStatus,
       userGender: user.userGender,
+      userOrderPlacedToday: user.userOrderPlacedToday
     });
   } catch (err) {
     res.sendStatus(404);
@@ -597,9 +598,11 @@ app.get("/getAllNodes",async (req,res) => {
               .status(401)
               .json({ auth: false });
         }
-        let allCategories = await Category.find({}).exec();
-        allCategories = allCategories.map((c)=>c.categoryName);
-        res.status(200).json({nodes: allCategories});
+        else{
+          let allCategories = await Category.find({}).exec();
+          allCategories = allCategories.map((c)=>c.categoryName);
+          res.status(200).json({nodes: allCategories});
+        }
     }
     catch(err){
         res.status(404).json({nodes: []});
