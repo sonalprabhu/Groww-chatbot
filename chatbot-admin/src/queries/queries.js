@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const getAllCategoriesPaths = async ()=>{
-    return await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}/getAllCategoryPaths`).then((response)=>response.data);
+    return await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}/getAllCategoryPaths`,{withCredentials: true}).then((response)=>response.data);
 }
 
 const getDynamicFuncs = async () => {
-    return await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}/getDynamicFuncs`).then((response)=>response.data);
+    return await axios.get(`${process.env.REACT_APP_BACKEND_BASE_URL}/getDynamicFuncs`,{withCredentials: true}).then((response)=>response.data);
 }
 
 const addFaq = async (data) => {

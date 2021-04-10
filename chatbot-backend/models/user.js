@@ -18,6 +18,8 @@ const userSchema = new Schema({
     userMaritalStatus: {type: String},
     userGender: {type: String},
     userKyc: {type: kycSchema},
+    userMaxOrdersPerDay: {type: Number},
+    userOrderPlacedToday: {type: Number},
     userOrders: [{type: mongoose.Schema.Types.ObjectId,ref: 'Order'}],
 },{
     id: false,

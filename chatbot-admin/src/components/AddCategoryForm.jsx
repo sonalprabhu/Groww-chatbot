@@ -84,7 +84,7 @@ export default function AddCategoryForm() {
     if (subCategoryList.length === 1) {
       alert("There should be at least a single subcategory");
     } else {
-      const idx = e.currentTarget.value;
+      const idx = parseInt(e.currentTarget.value);
       let newSubCategoryList = subCategoryList;
       newSubCategoryList = [
         ...subCategoryList.slice(0, idx),
@@ -107,7 +107,7 @@ export default function AddCategoryForm() {
     setSubCategoryList([
           ...subCategoryList.slice(0,parseInt(e.target.name))
       ].concat([e.target.value])
-      .concat([...subCategoryList.slice(parseInt(e.target.name)+1)
+      .concat([...subCategoryList.slice(parseInt(e.target.name)+1,subCategoryList.length)
     ]));
     setCategoryData({
         ...categoryData,
