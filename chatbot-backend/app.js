@@ -401,7 +401,7 @@ app.post("/placeOrder", async (req, res) => {
 
   const updateUserPromise = (userId, orderId) => {
     return new Promise((resolve, reject) => {
-      User.updateOne({ _id: userId }, { $push: { userOrders: orderId } })
+      User.updateOne({ _id: userId }, { $push: { userOrders: orderId },$inc: {userOrderPlacedToday: 1} })
         .exec()
         .then((res) => {
           resolve({
@@ -487,7 +487,7 @@ app.patch("/cancelOrder", async (req, res) => {
           $set: {
             orderStatus: "Cancelled",
             orderDate: orderDetails.orderDate
-          },
+          }
         }
       )
         .exec()
@@ -506,7 +506,7 @@ app.patch("/cancelOrder", async (req, res) => {
 
   try {
     const userId = req.query.user;
-    const user = await User.findById(userId).exec();
+    const user = await User.findByIdAndUpdate(userId,{$inc: {userOrderPlacedToday: -1}},{new: true}).exec();
     if (user === null || user === undefined || Object.keys(user).length === 0) {
       res.sendStatus(404);
     } else {
@@ -534,7 +534,7 @@ app.get("/loginAdmin", async (req, res) => {
       );
       res
         .cookie(process.env.ADMIN_AUTH_TOKEN_NAME, token, {
-          expires: new Date(Date.now() + 30 * 60 * 1000), //available only for 30 minutes
+          expires: new Date(Date.now() + 60 * 60 * 1000), //available only for 60 minutes
           sameSite: "lax",
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -573,12 +573,30 @@ const checkAdminAuth = async (req) => {
 };
 
 app.get("/getDynamicFuncs", async (req, res) => {
-  const dynamicFuncList = Object.keys(dynamicQuestions);
-  res.status(200).json({ dynamicFuncList });
+  const isAuthenticated = await checkAdminAuth(req);
+  if (!isAuthenticated.auth) {
+      res
+        .clearCookie(process.env.ADMIN_AUTH_TOKEN_NAME)
+        .clearCookie("userName")
+        .status(401)
+        .json({ auth: false });
+  }
+  else{
+    const dynamicFuncList = Object.keys(dynamicQuestions);
+    res.status(200).json({ dynamicFuncList });
+  }
 });
 
 app.get("/getAllNodes",async (req,res) => {
     try{
+        const isAuthenticated = await checkAdminAuth(req);
+        if (!isAuthenticated.auth) {
+            res
+              .clearCookie(process.env.ADMIN_AUTH_TOKEN_NAME)
+              .clearCookie("userName")
+              .status(401)
+              .json({ auth: false });
+        }
         let allCategories = await Category.find({}).exec();
         allCategories = allCategories.map((c)=>c.categoryName);
         res.status(200).json({nodes: allCategories});
@@ -624,100 +642,107 @@ app.post("/addCategory",async (req,res) => {
         }        
     }
     catch(err){
-        console.log(err);
         res.status(404).json({error: 'Cannot add the given category'});
     }
 })
 
 app.post("/addFaq", async (req, res) => {
-  const isAuthenticated = await checkAdminAuth(req);
-  if (!isAuthenticated.auth) {
-    res
-      .clearCookie(process.env.ADMIN_AUTH_TOKEN_NAME)
-      .clearCookie("userName")
-      .status(401)
-      .json({ auth: false });
-  } else {
-    const faq = req.body;
-    let faqRawAnswers = await Promise.all(
-      faq.faqAnswer.map(async (answer) => {
-        const faqDynamicKeyEncrypted = await Iron.seal(
-          { answerFunc: answer.faqDynamicKey },
-          process.env.DYNAMIC_ANSWER_SECRET,
-          Iron.defaults
-        );
-        return { ...answer, faqDynamicKey: faqDynamicKeyEncrypted };
-      })
-    );
-    let faqObj = new Faq({
-      faqQuestionText: faq.faqQuestionText,
-      faqCategoryPath: faq.faqCategoryPath,
-      faqAnswer: faqRawAnswers,
-    });
-    const faqSaved = await faqObj.save();
-    if (
-      faqSaved.faqCategoryPath[0] === "Orders" &&
-      faqSaved.faqCategoryPath[1] !== "General"
-    ) {
-      let saved = await Order.updateMany(
-        { orderStatus: faqSaved.faqCategoryPath[1] },
-        { $push: { faqId: faqSaved._id } }
-      ).exec();
-    } else if (faqSaved.faqCategoryPath[0] === "Products") {
-      await Product.updateOne(
-        { productName: faqSaved.faqCategoryPath[1] },
-        { $push: { faqId: faqSaved._id } }
-      ).exec();
-    } else if ((faqSaved.faqCategoryPath[0] = "My Account")) {
-      await User.updateMany({}, { $push: { faqId: faqSaved._id } }).exec();
+  try{
+    const isAuthenticated = await checkAdminAuth(req);
+    if (!isAuthenticated.auth) {
+      res
+        .clearCookie(process.env.ADMIN_AUTH_TOKEN_NAME)
+        .clearCookie("userName")
+        .status(401)
+        .json({ auth: false });
+    } else {
+      let faq = req.body;
+
+      const faqCategoryName = faq.faqCategoryPath[faq.faqCategoryPath.length-1];
+      delete faq.faqCategoryPath;
+      faq["faqUpvoteCount"] = 0;
+      faq["faqDownvoteCount"] = 0;
+      faq["faqDynamicKey"] = await Iron.seal({"answerFunc": faq["faqDynamicKey"]},process.env.DYNAMIC_ANSWER_SECRET,Iron.defaults);
+
+
+      let faqSaved = {};
+      if(faq.faqSameCategory){
+        let faqDoc = await Faq.findOne({faqCategoryName}).select("+faqQuestionAnswer.faqDynamicKey").exec();
+        if(faqDoc === null || faqDoc === undefined || Object.keys(faqDoc.toJSON()).length === 0){
+          let faqObj = new Faq({
+            faqQuestionAnswer: faq,
+            faqCategoryName
+          });
+          faqSaved = await faqObj.save();
+          await Category.updateOne({categoryName: faqCategoryName},{$push: {faqId: faqSaved._id}}).exec();
+        }
+        else{
+          await Faq.updateOne({_id: faqDoc._id},{$set: {faqQuestionAnswer: faqDoc.toJSON().faqQuestionAnswer.concat(faq)}}).exec();
+          faqSaved = faqDoc;
+        }
+      }
+      else{
+        let faqObj = new Faq({
+          faqQuestionAnswer: faq,
+          faqCategoryName
+        });
+        faqSaved = await faqObj.save();
+        await Category.updateOne({categoryName: faqCategoryName},{$push: {faqId: faqSaved._id}}).exec();
+      }
+      res.status(201).json({ faqId: faqSaved._id.toString(), auth: true });
     }
-    await Category.updateOne(
-      {
-        categoryName:
-          faqSaved.faqCategoryPath[faqSaved.faqCategoryPath.length - 1],
-      },
-      { $push: { faqId: faqSaved._id } }
-    ).exec();
-    res.status(201).json({ faqId: faqSaved._id.toString(), auth: true });
+  }
+  catch(err){
+    res.status(404).json({error: 'Faq already exists in the database'});
   }
 });
 
 app.get("/getAllCategoryPaths", async (req, res) => {
-  let categoriesGraph = createCategoriesGraph();
-  function getAllPaths() {
-    let stack = [];
-    stack.push(["root", ""]);
-    let allCategories = [];
+  const isAuthenticated = await checkAdminAuth(req);
+  if (!isAuthenticated.auth) {
+      res
+        .clearCookie(process.env.ADMIN_AUTH_TOKEN_NAME)
+        .clearCookie("userName")
+        .status(401)
+        .json({ auth: false });
+  }
+  else{
+    let categoriesGraph = createCategoriesGraph();
+    function getAllPaths() {
+      let stack = [];
+      stack.push(["root", ""]);
+      let allCategories = [];
 
-    while (stack.length > 0) {
-      let curr = stack.pop();
-      if (curr[1]) {
-        curr[1] += "->";
-      } else {
-        curr[1] += "\n";
-      }
-      curr[1] += curr[0];
-      if (
-        categoriesGraph[curr[0]] === null ||
-        categoriesGraph[curr[0]] === undefined
-      ) {
-        allCategories.push(curr[1].split("->"));
-      }
-      if (
-        categoriesGraph[curr[0]] !== null &&
-        categoriesGraph[curr[0]] !== undefined
-      ) {
-        for (const child of categoriesGraph[curr[0]]) {
-          stack.push([child, curr[1]]);
+      while (stack.length > 0) {
+        let curr = stack.pop();
+        if (curr[1]) {
+          curr[1] += "->";
+        } else {
+          curr[1] += "\n";
+        }
+        curr[1] += curr[0];
+        if (
+          categoriesGraph[curr[0]] === null ||
+          categoriesGraph[curr[0]] === undefined
+        ) {
+          allCategories.push(curr[1].split("->"));
+        }
+        if (
+          categoriesGraph[curr[0]] !== null &&
+          categoriesGraph[curr[0]] !== undefined
+        ) {
+          for (const child of categoriesGraph[curr[0]]) {
+            stack.push([child, curr[1]]);
+          }
         }
       }
+      for (let categoryPath of allCategories) {
+        categoryPath.shift();
+      }
+      return allCategories;
     }
-    for (let categoryPath of allCategories) {
-      categoryPath.shift();
-    }
-    return allCategories;
+    res.status(200).json({ allCategoriesPaths: getAllPaths() });
   }
-  res.status(200).json({ allCategoriesPaths: getAllPaths() });
 });
 
 /**Chatbot Specific Routes */
@@ -1048,6 +1073,42 @@ app.patch("/increaseDownvoteCount/:questionId/:questionPos",async (req,res)=>{
     res.sendStatus(404);
   }
 });
+
+app.patch("/setMaxOrderLimit",async (req,res)=> {
+  try{
+    const maxOrderCount = parseInt(req.query.maxOrderCount);
+    const userId = req.query.user;
+    if(maxOrderCount === null || maxOrderCount === undefined || userId === null || userId === undefined){
+      throw new Error("Invalid maxOrderCount");
+    }
+    const userDoc = await User.findByIdAndUpdate(userId,{$set: {userMaxOrdersPerDay: maxOrderCount}},{new: true}).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      throw new Error("Invalid user details");
+    }
+    res.status(200).json({maxOrderCount: parseInt(userDoc.userMaxOrdersPerDay)});
+  }
+  catch(err){
+    res.sendStatus(404);
+  }
+});
+
+app.get("/getMaxOrderLimit",async (req,res)=> {
+  try{
+    const userId = req.query.user;
+    if(userId === null || userId === undefined){
+      throw new Error("Malformed userId input");
+    }
+    const userDoc = await User.findById(userId).exec();
+    if(userDoc === null || userDoc === undefined || Object.keys(userDoc.toJSON()).length === 0){
+      throw new Error("Invalid user details");
+    }
+    res.status(200).json({maxOrderCount: parseInt(userDoc.userMaxOrdersPerDay)});
+  }
+  catch(err){
+    res.sendStatus(404);
+  }
+});
+
 
 exports.app = app;
 exports.getFaqsFromCategory = getFaqsFromCategory;

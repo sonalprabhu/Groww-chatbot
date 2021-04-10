@@ -1501,10 +1501,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'Heranba Industries',
-        //categoryId: [],
         productMaxUnitsPerOrder: 2,
         productUrl: 'https://assets.thehansindia.com/h-upload/2021/02/16/1031553-heranba.webp'
-        //faqId: [],
     },
     {
         productCategory: 'Stocks',
@@ -1529,10 +1527,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'Vodafone Idea',
-        //categoryId: [],
         productMaxUnitsPerOrder: 4,
         productUrl: 'https://assets-netstorage.groww.in/stock-assets/logos/INE669E01016.png',
-        //faqId: [],
     },
     {
         productCategory: 'Mutual Funds',
@@ -1557,10 +1553,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'ICICI Prudential Technology Direct Plan Growth',
-        //categoryId: [],
         productMaxUnitsPerOrder: 1,
         productUrl: 'https://groww.in/images/partners/icici_groww.svg'
-        //faqId: [],
     },
     {
         productCategory: 'Mutual Funds',
@@ -1585,10 +1579,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'Tata Digital India Fund Direct Growth',
-        //categoryId: [],
         productMaxUnitsPerOrder: 3,
         productUrl: 'https://groww.in/images/partners/tata_groww.svg'
-        //faqId: [],
     },
     {
         productCategory: 'FDs',
@@ -1613,10 +1605,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'Equitas 1 Year',
-        //categoryId: [],
         productMaxUnitsPerOrder: 1,
         productUrl: 'https://storage.googleapis.com/groww-assets/banking-assets/equitas-bank.svg'
-        //faqId: [],
     },
     {
         productCategory: 'FDs',
@@ -1641,10 +1631,8 @@ let productArr = [
                 purity: null,
         },
         productName: 'Equitas 3 Months',
-        //categoryId: [],
         productMaxUnitsPerOrder: 2,
         productUrl: 'https://storage.googleapis.com/groww-assets/banking-assets/equitas-bank.svg'
-        //faqId: [],
     },
     {
         productCategory: 'Gold',
@@ -1669,10 +1657,8 @@ let productArr = [
                 purity: '99.90%',
         },
         productName: 'Augmont Gold',
-        //categoryId: [],
         productMaxUnitsPerOrder: 2,
         productUrl: 'https://assets-netstorage.groww.in/website-assets/prod/1.5.2/build/client/images/logo-augmont.cb7c8652.png'
-        //faqId: [],
     },
 ]
 
@@ -1684,8 +1670,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Completed',
@@ -1694,8 +1678,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Pending',
@@ -1703,8 +1685,6 @@ let ordersArr = [
         category: 'Gold',
         products: [],//link product ids
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Pending',
@@ -1713,8 +1693,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Cancelled',
@@ -1723,8 +1701,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Cancelled',
@@ -1733,8 +1709,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
     {
         orderStatus: 'Cancelled',
@@ -1743,8 +1717,6 @@ let ordersArr = [
         products: [],//link product ids
         units: [],//link no of units of products
         userId: null,//link userId
-        //categoryId: [],//link categoryId
-        //faqId: [],
     },
 ]
 
@@ -1764,8 +1736,8 @@ let userArr = [
             }   
         },
         userOrders: [],
-        //categoryId: [],
-        //faqId: [],
+        userMaxOrdersPerDay: 5,
+        userOrderPlacedToday: 0,
     },
     {
         userName: 'bjourn@gmail.com',
@@ -1782,8 +1754,8 @@ let userArr = [
             }   
         },
         userOrders: [],
-        //categoryId: [],
-        //faqId: [],
+        userMaxOrdersPerDay: 3,
+        userOrderPlacedToday: 0,
     },
 ]
 

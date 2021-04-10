@@ -83,10 +83,13 @@ async function addCategories(){
         }
         catch(err){
             let faqsToBeLinked = await Faq.find({faqCategoryName: s.categoryName}).exec();
-            faqsToBeLinked = faqsToBeLinked.map((faq)=>{
-                return faq._id
-            });
-            await updateFaqCategory(s,faqsToBeLinked);
+            if(faqsToBeLinked.length !== 0)
+            {
+                faqsToBeLinked = faqsToBeLinked.map((faq)=>{
+                    return faq._id
+                });
+                await updateFaqCategory(s,faqsToBeLinked);
+            }
         }
     }
     console.log('All categories created...');
@@ -99,18 +102,9 @@ async function addUsers(){
     console.log('All users deleted. Total users size: '+userArr.length+'...Adding users');
 
     for(const user of userArr){
-        // let myAccountCategoryDoc = await Category.findOne({categoryName: 'My Account'}).exec();
-        // user.categoryId = [...myAccountCategoryDoc.subCategoryId];
         let userObj = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
         let userSaved = await userObj.save();
         console.log('User saved with id: '+userSaved._id);
-        // let faqsToBeLinked = await Faq.find({faqCategoryPath: 'My Account'}).exec();
-        // for(const faq of faqsToBeLinked){
-        //     user.faqId.push(faq._id);
-        // }
-        // let userObj  = new User({...user,userPass: bcrypt.hashSync(user.userPass,saltRounds)});
-        // let userSaved = await userObj.save();
-        // console.log('User saved with id: '+userSaved._id);
     }
     console.log('All users added successfully');
     return true;
@@ -120,18 +114,9 @@ async function addProducts(){
     await Product.deleteMany().exec();
     console.log('All products deleted..Creating new products of size: '+productArr.length);
     for(const product of productArr){
-        // let productCategory = await Category.findOne({categoryName: product.productName}).exec();
-        // product.categoryId = [...productCategory.subCategoryId];
         let productObj = new Product({...product});
         let productSaved = await productObj.save();
         console.log('Product saved with id: '+productSaved._id);
-        // let productFaqs = await Faq.find({faqCategoryPath: {$all: ['Products',product.productName]}}).exec();
-        // for(const faq of productFaqs){
-        //     product.faqId.push(faq._id);
-        // }
-        // let productObj = new Product({...product});
-        // let productSaved = await productObj.save();
-        // console.log('Product saved with id: '+productSaved._id);
     }
     console.log('All products added successfully');
     return true;
@@ -155,12 +140,6 @@ async function addOrders(){
         if(i == allUsers.length){
             i=0;
         }
-        // let orderStatusCategory = await Category.findOne({categoryName: order.orderStatus}).exec();
-        // order.categoryId = [orderStatusCategory._id];
-        // let faqsToBeLinked = await Faq.find({faqCategoryPath: {$all: ['Orders',order.orderStatus]}}).exec();
-        // for(const faq of faqsToBeLinked){
-        //     order.faqId.push(faq._id);
-        // }
         let orderObj = new Order({...order});
         let orderSaved = await orderObj.save();
         console.log('Order saved with id: '+orderSaved._id);
