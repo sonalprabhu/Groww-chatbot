@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const categorySchema = new Schema({
-    categoryName: {type: String},
+    categoryName: {type: String,unique: true},
     subCategoryId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Category'}],
     hasSubCategory: {type: Boolean},
     faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],

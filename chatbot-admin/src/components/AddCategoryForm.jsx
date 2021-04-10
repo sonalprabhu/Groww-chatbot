@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import {useHistory} from "react-router-dom";
 import { lightGreen } from "@material-ui/core/colors";
 import Snackbar from "@material-ui/core/Snackbar";
 import AddIcon from "@material-ui/icons/Add";
@@ -63,16 +64,25 @@ export default function AddCategoryForm() {
     categoryName: "",
     subCategories: [],
   });
-  const [isSubmitting] = useState(false);
+  const [isSubmitting,setSubmitting] = useState(false);
   const [snackSuccessOpen, setSnackSuccess] = useState(false);
   const [snackFailOpen, setSnackFail] = useState(false);
   const [errMessage, setErrMessage] = useState("");
+  const history = useHistory();
 
   useEffect(() => {
     getAllNodes()
       .then((data) => setAllNodes(data.nodes))
-      .catch((err) => setAllNodes(err.response.nodes));
-  }, [allNodes.length]);
+      .catch((err) => {
+        const auth = err.response.data.auth;
+        if(auth === false){
+          history.push("/admin_login");
+        }
+        else{
+          setAllNodes([]);
+        }
+      });
+  }, [allNodes.length,history]);
 
   const addSubCategory = () => {
     let newSubCategoryList = subCategoryList;
@@ -92,7 +102,7 @@ export default function AddCategoryForm() {
       ];
       setSubCategoryList(newSubCategoryList);
       let newCategoryData = categoryData;
-      newCategoryData.subCategories = subCategoryList;
+      newCategoryData.subCategories = newSubCategoryList;
       setCategoryData(newCategoryData);
     }
   };
@@ -111,8 +121,12 @@ export default function AddCategoryForm() {
     ]));
     setCategoryData({
         ...categoryData,
-        subCategories:subCategoryList 
-    });
+        subCategories:[
+                        ...subCategoryList.slice(0,parseInt(e.target.name))
+                    ].concat([e.target.value])
+                    .concat([...subCategoryList.slice(parseInt(e.target.name)+1,subCategoryList.length)
+                  ]) 
+      });
   };
 
   const handleLeafNodeChange = (_) => {
@@ -164,25 +178,40 @@ export default function AddCategoryForm() {
     }
     if (isCategoryDataCorrect === true) {
       //add the category
-      addCategory(categoryData)
+      let data = categoryData;
+      if(isLeafNode){
+        data.subCategories = [];
+      }
+      else{
+        data.subCategories = subCategoryList.filter(
+          (s) => s !== ""
+        );
+      }
+      setSubmitting(true);
+      addCategory(data)
       .then((data)=>{
           if(Object.keys(data).length === 2){
               setSnackSuccess(true);
+              setSubmitting(false);
               setAllNodes([...allNodes,categoryData.categoryParent].concat([...categoryData.subCategories]));
           }
           else{
+              setSubmitting(false);
               alert('Category cannot be added.Try again after sometime');
           }
       }).catch((err)=>{
           if(err.response.data['auth'] !== undefined && err.response.data['auth']!==null && err.response.data['auth'] === false){
-              alert('You are not logged in');
+            setSubmitting(false);  
+            alert('You are not logged in');
               window.location.reload();
           }
           else if(err.response.data['error'] !== undefined && err.response.data['error']){
+              setSubmitting(false);
               setSnackFail(true);
               setErrMessage(err.response.data['error']);
           }
           else{
+              setSubmitting(false);
               alert('Some unknown error occured');
           }
       });
@@ -301,14 +330,7 @@ export default function AddCategoryForm() {
               <ColorButton
                 variant="contained"
                 onClick={addSubCategory}
-                startIcon={
-                  isSubmitting === true ? (
-                    <CircularIndeterminate />
-                  ) : (
-                    <AddIcon />
-                  )
-                }
-                disabled={isSubmitting}
+                startIcon={<AddIcon />}
               >
                 Add Subcategory
               </ColorButton>
