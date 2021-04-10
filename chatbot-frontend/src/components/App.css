@@ -32,7 +32,7 @@
   border:0px !important;
 }
 .react-chatbot-kit-chat-bot-message{
-  border-radius:0px 0px 20px 20px !important;
+  border-radius:0px 20px 20px 20px !important;
 }
 .react-chatbot-kit-chat-bot-message-arrow{
   border:0px !important;
@@ -64,12 +64,14 @@
     background-repeat: no-repeat;
 }
 
+
 .clear-btn{
+  background-color: #090a0a !important;
   position: fixed;
     bottom:10px;
     right: 100px;
     height:40px;
-   
+    border-radius:30%;
 }
 
 
@@ -127,6 +129,20 @@ a:hover{
   -webkit-font-smoothing: auto;
 }
 
+.link-text{
+  color:#f9fafa;
+  line-height: 15px;
+  padding-right: 45px;
+  height: 54px;
+  --webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing: auto;
+}
+
+.link-text:hover{
+  color:#f9fafa;
+  text-decoration: transparent 
+}
+
 .wrapper{
   padding:20px;
 }
@@ -156,7 +172,7 @@ a:hover{
 }
 
 .order-card{
-  box-shadow: 0 1px 7px 0 rgba(0,0,0,0.1);
+  box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
   min-height: 190px;
   width: 700px;
   position: relative;
@@ -169,6 +185,7 @@ a:hover{
   padding-top: 15px;
   border-radius: 8px;
   margin-right: 15px;
+  margin-bottom:20px;
 }
 
 .item-name{
@@ -238,7 +255,7 @@ a:hover{
   flex-wrap: nowrap;
 }
 
-.learning-option-button {
+.custom-button {
   padding: 0.5rem;
   border-radius: 5px;
   background: aliceblue;
@@ -360,4 +377,111 @@ a:hover{
   bottom:5px;
   left:10px;
   font-size:30px;
+}
+
+.alert-btn{
+  padding: 0.5rem;
+  color:white;
+  border-radius: 5px;
+  background: red;
+  border: 1px solid transparent;
+  margin: 3px;
+}
+
+
+.MainDiv {
+  height: 100%;
+  display:flex;
+  flex-direction:row;
+  justify-content:space-between;
+  align-self: center;
+  justify-self: center;
+  align-items: center;
+}
+
+.settings-card{
+  box-shadow: 0 1px 7px 0 rgba(0,0,0,0.1);
+  min-height: 190px;
+  width: 700px;
+  position: relative;
+  transition: all .3s ease;
+  padding-left: 15px;
+  padding-bottom: 15px;
+  padding-top: 15px;
+  border-radius: 8px;
+}
+.DisplayDiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-self: center;
+  align-self: center;
+  align-content: center;
+  text-align: center;
+  font-weight: 400;
+  font-size: 20px;
+}
+.DisplayDiv p {
+  text-align: center;
+  margin-bottom: 5%;
+  font-size: 20px;
+}
+.ButtonDiv {
+  margin-top: 2%;
+  display: flex;
+  flex-direction: row;
+  height: 25%;
+  width: 100%;
+  justify-content: center;
+  align-self: center;
+}
+.Button {
+  padding: 5px;
+  width: 7%;
+  width: 120px;
+  border: 2px solid black;
+  justify-content: center center;
+  align-self: center;
+  background-color: #a9a9a9;
+  cursor: pointer;
+  text-align: center;
+  margin-right: 5px;
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.settingsDiv{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+  align-items: center;
+}
+
+.save-btn{
+  margin-top:10px;
+  padding:5px;
+}
+
+.status-container{
+  display:flex;
+  flex-direction: column;
+}
+
+.order-status{
+  width:100px;
+}
+
+.order-status-color{
+  color:white;
+}
+
+.cancel-status{
+  background-color: rgb(240, 12, 12);
+  color:white;
+}
+
+.pending-status{
+  background-color: rgb(253, 249, 17);
+  color:white;
 }

@@ -6,6 +6,7 @@ import {close} from '../app/reducers/chatbotToggle';
 import SubHeader from './SubHeader';
 import {  Link} from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
+import actionProvider from '../chatbot/ActionProvider';
 
 export default function Orders(props) {
     const dispatch = useDispatch()
@@ -20,7 +21,7 @@ export default function Orders(props) {
     function tabClicked(loc){
         const location = mapper[loc.split('/')[3]]
         async function fetchData(){   
-            var order = await axios.get(`http://localhost:8081/getAllOrders`,{params:{category:location,user:userId}})
+            var order = await axios.get(`${process.env.BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
           .then(res => {
             return res.data;
           })
@@ -34,7 +35,7 @@ export default function Orders(props) {
         const location = mapper[document.location.pathname.split('/')[3]]
 
         async function fetchData(){   
-        var order = await axios.get(`http://localhost:8081/getAllOrders`,{params:{category:location,user:userId}})
+        var order = await axios.get(`${process.env.BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
       .then(res => {
         return res.data;
       })
@@ -49,21 +50,24 @@ export default function Orders(props) {
         <SubHeader link="/dashboard/orders" onClick={tabClicked}/>
         <div className="container-fluid web-align wrapper">
         <div className="row justify-content-center">
-        {orders.length==0 && <div className="item-card">No Orders in this category</div>}
+        {orders.length===0 && <div className="item-card">No Orders in this category</div>}
         {orders.map((order)=>{
             return(
+                <div className="col-6 order-card" key={order._id}>
                 <Link to={{
-                    pathname:"/dashboard/orders/"+props.location.pathname.split('/')[3]+'/'+order._id
-                }}  className="clickable" key={order._id} onClick={()=>dispatch(close())}>
-            <div className="order-card col-12" key={order._id}>
+                    pathname:"/dashboard/orders/"+props.location.pathname.split('/')[3]+'/'+order._id,actionProvider
+                }}  className="clickable" onClick={()=>dispatch(close())}>
+            <div className="" key={order._id}>
             <div className="order-date">{order.orderDate} </div>
             <div className="order-details">
              <div className="order-name">{order.products?( order.products[0]?order.products[0].productName:"This is a product name"):"This is a product name"} </div>
              <div className="item-price">₹{order.productPrice ||10000} </div>
-             <Button className="order-status">{order.orderStatus} </Button>
+             <Button className="order-status-color" variant={`${order.orderStatus === 'Pending' ? "warning" : (order.orderStatus === 'Cancelled' ? "danger" : "success")}`}
+                            >{order.orderStatus} </Button>
              </div>
              </div>
              </Link>
+             </div>
             );
         })}
         </div>

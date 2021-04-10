@@ -5,9 +5,6 @@ class MessageParser {
     }
   
     parse(message) {
-      const lowerCaseMessage = message.toLowerCase()
-    
-   
       this.actionProvider.greet()
     
     }

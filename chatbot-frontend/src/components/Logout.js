@@ -11,7 +11,10 @@ function Logout(props) {
     }
   const dispatch = useDispatch()
     useEffect(
+      
       async e => {
+        dispatch(clearMessages())
+          dispatch(logout())
         userService.logout()
         .then((response)=>{
           dispatch(clearMessages())
