@@ -17,6 +17,7 @@ export default function ProductPage(props) {
     const [placeOrder, setPlaceOrder] = useState(false);
     const [confirmOrder, setConfirmOrder] = useState(false);
     const [orderLimit, setOrderLimit] = useState();
+    const [orderId, setOrderId] = useState();
     const userId = useSelector(state => state.users.userId);
     const messages = useSelector(state => state.messages.value);
     var date = (new Date()).toJSON().slice(0, 10);
@@ -80,12 +81,14 @@ export default function ProductPage(props) {
         if (orderLimit !== 0 && ordersToday >= orderLimit)
             setAlert();
         else {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/placeOrder`, { products: [product._id], units: [1], category: product.productCategory, orderDate: nDate, }, { params: { user: userId } })
+            var order = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/placeOrder`, { products: [product._id], units: [1], category: product.productCategory, orderDate: nDate, }, { params: { user: userId } })
+            setOrderId(order.data.orderId);
             setPlaceOrder(true);
         }
     }
 
-    function confirmProductOrder() {
+    async function confirmProductOrder() {
+        await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/confirmOrder`,{ orderId: orderId, orderDate: nDate }, { params: { user: userId } })
         setConfirmOrder(false);
         setPlaceOrder(false);
         createNotification('success', 'Order Placed Successfully');
@@ -93,7 +96,7 @@ export default function ProductPage(props) {
 
     function placePendingOrder() {
         createNotification('warning', 'Order in pending state');
-        createNotification('warning', 'Confirm Order again');
+        createNotification('warning', 'Confirm Order in Orders Page');
         setPlaceOrder(false);
         setConfirmOrder(false);
     }

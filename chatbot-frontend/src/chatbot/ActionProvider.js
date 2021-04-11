@@ -8,13 +8,15 @@ class ActionProvider {
     this.setState = setStateFunc;
     this.createClientMessage = createClientMessage;
     this.products = ['Stocks', 'FDs', 'Gold', 'Mutual Funds'];
-    this.offset = 1;
   }
 
-  set Offset(val) {
-    this.offset = val;
+  handleNext(){
+    const message = this.createChatBotMessage("Hello, What do you want to know?",
+      {
+        widget: "FAQ"
+      });
+    this.updateChatbotState(message);
   }
-
 
   greet() {
     const greetingMessage = this.createChatBotMessage("Please select from available questions")
