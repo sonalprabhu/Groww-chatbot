@@ -1,15 +1,16 @@
-const {Faq} = require('./models/faqs');
-const {User} = require('./models/user');
-const {Order} = require('./models/order');
-const {Product} = require('./models/product');
-const {Category} = require('./models/category');
-const {Admin} = require('./models/admin');
+const {Faq} = require('../models/faqs');
+const {User} = require('../models/user');
+const {Order} = require('../models/order');
+const {Product} = require('../models/product');
+const {Category} = require('../models/category');
+const {Admin} = require('../models/admin');
 const {createCategoriesGraph} = require('./categoriesGraph');
 const {faqArr,userArr,ordersArr,productArr,adminArr} = require('./data');
 const Iron = require('@hapi/iron');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+//DB seeding procedure for adding faqs after cleanup
 async function addFaqs(){
     console.log('Deleting all the data in the faqs collection...');
     await Faq.deleteMany().exec();
@@ -30,6 +31,8 @@ async function addFaqs(){
     console.log('Faqs added successfully');
     return true;
 }
+
+//DB seeding procedure for adding categories from category graph after cleanup
 async function addCategories(){
     console.log('Deleting all categories');
     await Category.deleteMany().exec();
@@ -96,6 +99,7 @@ async function addCategories(){
     return true;
 }
 
+//DB seeding procedure for adding mock users after cleanup
 async function addUsers(){
     console.log('Deleting all the users in the user collection...');
     await User.deleteMany().exec();
@@ -109,6 +113,8 @@ async function addUsers(){
     console.log('All users added successfully');
     return true;
 }
+
+//DB seeding procedure for adding products after cleanup
 async function addProducts(){
     console.log('Deleting all previous products');
     await Product.deleteMany().exec();
@@ -121,6 +127,8 @@ async function addProducts(){
     console.log('All products added successfully');
     return true;
 }
+
+//DB seeding procedure for adding orders after cleanup
 async function addOrders(){
 
     console.log('Deleting all previous orders');
@@ -147,6 +155,8 @@ async function addOrders(){
     console.log('All orders added successfully');
     return true;
 }
+
+//DB seeding procedure for linking mock users with their orders after cleanup
 async function linkUsersToOrders(){
     console.log('Linking users with their orders...');
     let allOrders = await Order.find().exec();
@@ -169,6 +179,7 @@ async function linkUsersToOrders(){
     return true;
 }
 
+//DB seeding procedure for adding superusers for chatbot-admin
 async function addAdmins(){
     console.log('Deleting all the superusers in the admins collection...');
     let deleteAllUsers = await Admin.deleteMany().exec();

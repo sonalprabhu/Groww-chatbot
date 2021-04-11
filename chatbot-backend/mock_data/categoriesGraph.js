@@ -14,6 +14,7 @@ class Graph{
         return this.g;
     }
 }
+//Creates a category graph for the chatbot .Look at /assets/CategoryTreeGroww.jpg to see it visually
 function createCategoriesGraph(){
     let categoryGraph = new Graph({});
     for(const primaryCategories of ['Orders','My Account','Stocks','Gold','FDs','Mutual Funds','Products']){

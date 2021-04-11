@@ -1,10 +1,11 @@
 const {Category} = require('../models/category');
 const {User} = require('../models/user');
 const {Product} = require('../models/product');
-const {app,fetchUserKycFaqs,getFaqsFromCategory} = require('../app');
+const {app} = require('../app');
+const {fetchUserKycFaqs,getFaqsFromCategory} = require("../api_config/ResponseMapper");
 const supertest = require('supertest');
 const mongoose = require('mongoose');
-const {productArr} = require('../data');
+const {productArr} = require('../mock_data/data');
 
 describe("Testing '/product-specific-questions' API",()=> {
 

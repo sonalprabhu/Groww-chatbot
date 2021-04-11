@@ -1,7 +1,8 @@
 const {User} = require('../models/user');
 const {Order} = require('../models/order');
 const {Category} = require('../models/category');
-const {app,fetchUserKycFaqs,getFaqsFromCategory} = require('../app');
+const {app} = require('../app');
+const {getFaqsFromCategory,fetchUserKycFaqs} = require("../api_config/ResponseMapper");
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 

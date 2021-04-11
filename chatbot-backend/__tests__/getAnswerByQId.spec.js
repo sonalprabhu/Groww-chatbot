@@ -4,7 +4,7 @@ const {app} = require('../app');
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 const Iron = require('@hapi/iron');
-const { getAnswerDynamicQuestion } = require('../dynamic_answer_mapper');
+const { getAnswerDynamicQuestion } = require('../api_config/dynamic_answer_mapper');
 
 describe("Testing '/get-answer-by-questionId' API",()=> {
 

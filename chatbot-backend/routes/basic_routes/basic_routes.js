@@ -1,0 +1,13 @@
+require('./CancelOrder');
+require('./CheckAuth');
+require('./ConfirmOrder');
+require('./GetAllOrders');
+require('./GetAllProducts');
+require('./GetOrderDetailsById');
+require('./GetProductDetailsById');
+require('./GetUserDetailsById');
+require('./Login');
+require('./Logout');
+require('./PlaceOrder');
+const {router} = require('../../api_config/CreateRouter');
+exports.router = router;

@@ -1,3 +1,4 @@
+//Contains all the data dump used to populate database for checking procedures and API testing
 let faqArr = [
     {
         faqQuestionAnswer: [

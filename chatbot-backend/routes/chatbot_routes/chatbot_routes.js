@@ -1,0 +1,14 @@
+require('./GetAllCategories');
+require('./GetAnswerForFaqs');
+require('./GetFaqByCategoryId');
+require('./GetMaxOrderLimit');
+require('./IncreaseDownvoteCountFaq');
+require('./IncreaseUpvoteCountFaq');
+require('./OrderSpecificFaqs');
+require('./ProductSpecificFaqs');
+require('./SearchByCategoryFaqs');
+require('./SetMaxOrderLimit');
+require('./UserAccountFaqs');
+require('./UserSpecificOrderDetailsFaqs');
+const {router} = require('../../api_config/CreateRouter');
+exports.router = router;
