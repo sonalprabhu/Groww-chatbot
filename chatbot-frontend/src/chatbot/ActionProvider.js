@@ -33,7 +33,7 @@ class ActionProvider {
   }
 
   handleMoreQuestionsClick = () => {
-    console.log(process.env.BACKEND_URL)
+    console.log(process.env.REACT_APP_BACKEND_URL)
     const clientMessage = this.createClientMessage("I have more queries");
     this.updateChatbotStateWithClientMessage(clientMessage);
     const message = this.createChatBotMessage(
@@ -87,7 +87,7 @@ class ActionProvider {
     }
 
 
-    axios.get(`${process.env.BACKEND_URL}/get-answer-by-questionId/${selectedQuestion.QuestionId}/${selectedQuestion.QuestionPos}`, { params: paramList })
+    axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-answer-by-questionId/${selectedQuestion.QuestionId}/${selectedQuestion.QuestionPos}`, { params: paramList })
       .then(res => {
         var ans = res.data.Answer;
         var msg = [];
@@ -108,13 +108,13 @@ class ActionProvider {
   }
 
   handleQuestionLike(option) {
-    axios.patch(`${process.env.BACKEND_URL}/increaseUpvoteCount/${option.QuestionId}/${option.QuestionPos}`)
+    axios.patch(`${process.env.REACT_APP_BACKEND_URL}/increaseUpvoteCount/${option.QuestionId}/${option.QuestionPos}`)
       .then(res =>
         console.log(res));
   }
 
   handleQuestionDislike(option) {
-    axios.patch(`${process.env.BACKEND_URL}/increaseDownvoteCount/${option.QuestionId}/${option.QuestionPos}`)
+    axios.patch(`${process.env.REACT_APP_BACKEND_URL}/increaseDownvoteCount/${option.QuestionId}/${option.QuestionPos}`)
       .then(res =>
         console.log(res));
   }

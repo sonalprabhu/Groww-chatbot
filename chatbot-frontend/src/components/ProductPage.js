@@ -44,12 +44,12 @@ export default function ProductPage(props) {
 
     useEffect(() => {
         async function fetchData() {
-            var item = await axios.get(`${process.env.BACKEND_URL}/getProductDetails/${props.match.params.id}`)
+            var item = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getProductDetails/${props.match.params.id}`)
                 .then(res => {
                     return res.data;
                 });
             if (userId !== '') {
-                var userMaxOrder = await axios.get(`${process.env.BACKEND_URL}/getMaxOrderLimit`, { params: { user: userId } })
+                var userMaxOrder = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getMaxOrderLimit`, { params: { user: userId } })
                     .then(res => {
                         return res.data.maxOrderCount;
                     })
@@ -73,14 +73,14 @@ export default function ProductPage(props) {
     }
 
     async function placeProductOrder() {
-        var ordersToday = await axios.get(`${process.env.BACKEND_URL}/getUserDetails/${userId}`)
+        var ordersToday = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getUserDetails/${userId}`)
             .then(res => {
                 return res.data.userOrderPlacedToday;
             });
         if (orderLimit !== 0 && ordersToday >= orderLimit)
             setAlert();
         else {
-            await axios.post(`${process.env.BACKEND_URL}/placeOrder`, { products: [product._id], units: [1], category: product.productCategory, orderDate: nDate, }, { params: { user: userId } })
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/placeOrder`, { products: [product._id], units: [1], category: product.productCategory, orderDate: nDate, }, { params: { user: userId } })
             setPlaceOrder(true);
         }
     }

@@ -15,7 +15,7 @@ export default function Account(props) {
     
     useEffect(() => {
         async function fetchData(){ 
-        var user = await axios.get(`${process.env.BACKEND_URL}/getUserDetails/${userId}`)
+        var user = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getUserDetails/${userId}`)
       .then(res => {
         return res.data;
       });

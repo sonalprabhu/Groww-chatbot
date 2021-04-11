@@ -21,7 +21,7 @@ export default function Orders(props) {
     function tabClicked(loc){
         const location = mapper[loc.split('/')[3]]
         async function fetchData(){   
-            var order = await axios.get(`${process.env.BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
+            var order = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
           .then(res => {
             return res.data;
           })
@@ -35,7 +35,7 @@ export default function Orders(props) {
         const location = mapper[document.location.pathname.split('/')[3]]
 
         async function fetchData(){   
-        var order = await axios.get(`${process.env.BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
+        var order = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getAllOrders`,{params:{category:location,user:userId}})
       .then(res => {
         return res.data;
       })

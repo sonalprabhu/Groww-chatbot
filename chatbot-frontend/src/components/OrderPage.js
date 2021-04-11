@@ -36,7 +36,7 @@ export default function OrderPage(props) {
 
     useEffect(() => {
         async function fetchData() {
-            var item = await axios.get(`${process.env.BACKEND_URL}/getOrderDetails/${props.match.params.id}`, { params: { user: userId } })
+            var item = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getOrderDetails/${props.match.params.id}`, { params: { user: userId } })
                 .then(res => {
                     return res.data;
                 });
@@ -48,9 +48,9 @@ export default function OrderPage(props) {
 
 
     async function confirmProductOrder() {
-        var orderId = await axios.patch(`${process.env.BACKEND_URL}/confirmOrder`, { orderId: order._id, orderDate: nDate }, { params: { user: userId } })
+        var orderId = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/confirmOrder`, { orderId: order._id, orderDate: nDate }, { params: { user: userId } })
         createNotification('success', 'Order Placed Successfully');
-        var item = await axios.get(`${process.env.BACKEND_URL}/getOrderDetails/${orderId}`, { params: { user: userId } })
+        var item = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getOrderDetails/${orderId}`, { params: { user: userId } })
             .then(res => {
                 return res.data;
             });
@@ -59,8 +59,8 @@ export default function OrderPage(props) {
 
 
     async function cancelOrder() {
-        var orderId = await axios.patch(`${process.env.BACKEND_URL}/cancelOrder`, { orderId: order._id, orderDate: nDate }, { params: { user: userId } })
-        var item = await axios.get(`${process.env.BACKEND_URL}/getOrderDetails/${orderId}`, { params: { user: userId } })
+        var orderId = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/cancelOrder`, { orderId: order._id, orderDate: nDate }, { params: { user: userId } })
+        var item = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getOrderDetails/${orderId}`, { params: { user: userId } })
             .then(res => {
                 return res.data;
             });

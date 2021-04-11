@@ -30,7 +30,7 @@ export default function FAQ(props) {
     if (contextLength === 2) {
       if (products.indexOf(mapper[context[contextLength - 1]]) > -1) {
         urlParams.categoryName = mapper[context[contextLength - 1]];
-        questions = await axios.get(`${process.env.BACKEND_URL}/search-on-category`, { params: urlParams })
+        questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/search-on-category`, { params: urlParams })
           .then(res => {
             return res.data;
           });
@@ -39,7 +39,7 @@ export default function FAQ(props) {
     }
     else if (contextLength === 3) {
       if (mainCategory === 'account' && props.user !== 'guest') {
-        questions = await axios.get(`${process.env.BACKEND_URL}/user-account-questions`, { params: urlParams })
+        questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user-account-questions`, { params: urlParams })
           .then(res => {
             return res.data;
           });
@@ -47,7 +47,7 @@ export default function FAQ(props) {
       }
       else if (products.indexOf(mapper[context[contextLength - 2]]) > -1) {
         urlParams.product = context[contextLength - 1];
-        questions = await axios.get(`${process.env.BACKEND_URL}/product-specific-questions`, { params: urlParams })
+        questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/product-specific-questions`, { params: urlParams })
           .then(res => {
             return res.data;
           });
@@ -57,7 +57,7 @@ export default function FAQ(props) {
     else if (contextLength === 4) {
       mainCategory = context[contextLength - 2]
       if (mainCategory === 'orders' && props.user !== 'guest') {
-        questions = await axios.get(`${process.env.BACKEND_URL}/user-specific-order-details`, { params: urlParams })
+        questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user-specific-order-details`, { params: urlParams })
           .then(res => {
             return res.data;
           });
@@ -69,7 +69,7 @@ export default function FAQ(props) {
       mainCategory = context[2];
       urlParams.order = context[contextLength - 1];
       if (mainCategory === 'orders') {
-        questions = await axios.get(`${process.env.BACKEND_URL}/order-specific-questions`, { params: urlParams })
+        questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/order-specific-questions`, { params: urlParams })
           .then(res => {
             return res.data;
           });
