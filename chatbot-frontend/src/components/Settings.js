@@ -8,7 +8,7 @@ export default function App() {
 
     useEffect(() => {
         async function fetchData(){   
-        var orderCount = await axios.get(`${process.env.BACKEND_URL}/getMaxOrderLimit`,{params:{user:userId}})
+        var orderCount = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getMaxOrderLimit`,{params:{user:userId}})
       .then(res => {
         return res.data.maxOrderCount;
       })
@@ -29,7 +29,7 @@ export default function App() {
     }, [count]);
 
     function setMaxLimit() {
-            axios.patch(`${process.env.BACKEND_URL}/setMaxOrderLimit`,{},{ params:{maxOrderCount:count,user:userId}})
+            axios.patch(`${process.env.REACT_APP_BACKEND_URL}/setMaxOrderLimit`,{},{ params:{maxOrderCount:count,user:userId}})
                 .then((res) => setCount(res.data.maxOrderCount));
     }
 

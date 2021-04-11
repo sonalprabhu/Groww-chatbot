@@ -16,7 +16,7 @@ export default function FullFAQ(props) {
     var categoryId = Cookies.get('categoryId');
     if (categoryId)
       queryParams.id = categoryId;
-    var questions = await axios.get(`${process.env.BACKEND_URL}/get-all-categories`, { params: queryParams })
+    var questions = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-all-categories`, { params: queryParams })
       .then(res => {
         return res.data;
       });

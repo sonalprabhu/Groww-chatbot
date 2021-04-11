@@ -21,7 +21,7 @@ function Products(props) {
 
     useEffect(() => {
         async function fetchData() {
-            var item = await axios.get(`${process.env.BACKEND_URL}/getAllProducts`, { params: { category: mapper[props.text] } })
+            var item = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/getAllProducts`, { params: { category: mapper[props.text] } })
                 .then(res => {
                     return res.data;
                 });

@@ -15,7 +15,7 @@ export default function CategoryQuestions(props) {
 
     useEffect(async () => {
         var categoryId=Cookies.get('categoryId');
-          var questions =  await axios.get(`${process.env.BACKEND_URL}/get-question-by-category/${categoryId}`)
+          var questions =  await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-question-by-category/${categoryId}`)
           .then(res => {
             return res.data;
           });
