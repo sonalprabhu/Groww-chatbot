@@ -1,3 +1,6 @@
+/**
+ * AddCategoryForm component is used for adding a new category to database
+ */
 import React, { useEffect, useState } from "react";
 import {useHistory} from "react-router-dom";
 import { lightGreen } from "@material-ui/core/colors";
@@ -11,6 +14,7 @@ import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { withStyles, makeStyles } from "@material-ui/core/styles";
 import { IconButton } from "@material-ui/core";
+import MenuAppBar from "./MenuAppBar";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,13 +34,11 @@ function CircularIndeterminate() {
 
   return (
     <div className={classes.root}>
-      <div className="row justify-content-center">
-        <CircularProgress
-          className={classes.progress}
-          size="1em"
-          thickness={3}
-        />
-      </div>
+      <CircularProgress
+        className={classes.progress}
+        size="1em"
+        thickness={5}
+      />
     </div>
   );
 }
@@ -220,6 +222,7 @@ export default function AddCategoryForm() {
 
   return (
     <React.Fragment>
+      <MenuAppBar/>
       <Snackbar
         open={snackSuccessOpen}
         autoHideDuration={5000}

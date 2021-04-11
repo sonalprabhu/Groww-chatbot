@@ -1,3 +1,6 @@
+/**
+ * Contains the React Context variables for storing user information and session information
+ */
 import React from "react";
 import {AuthReducer,initialState} from './reducer';
 

@@ -29,13 +29,11 @@ function CircularIndeterminate() {
 
   return (
     <div className={classes.root}>
-      <div className="row justify-content-center">
-        <CircularProgress
-          className={classes.progress}
-          size="1em"
-          thickness={3}
-        />
-      </div>
+      <CircularProgress
+        className={classes.progress}
+        size="1em"
+        thickness={3}
+      />
     </div>
   );
 }

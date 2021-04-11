@@ -1,3 +1,6 @@
+/**
+ * This is the Root Component of the Frontend.
+ */
 import { BrowserRouter, Switch, Redirect } from "react-router-dom";
 import routes from "./Config/routes";
 import { AuthProvider } from "./Context/context";

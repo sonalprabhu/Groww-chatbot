@@ -1,3 +1,6 @@
+/**
+ * Contains the dispatch function for different types of request regarding authorization
+ */
 import Cookies from 'js-cookie';
 const userName = Cookies.get('userName'); 
 export const initialState = {

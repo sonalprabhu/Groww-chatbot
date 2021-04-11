@@ -1,3 +1,6 @@
+/**
+ * Contains all the required navigation paths
+ */
 import AddCategoryForm from '../components/AddCategoryForm';
 import AddFaqForm from '../components/AddFaqForm';
 import LoginForm from '../components/LoginForm';

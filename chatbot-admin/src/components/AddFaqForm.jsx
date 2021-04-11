@@ -1,3 +1,6 @@
+/**
+ * AddFaqForm component is used for adding a new faq to database
+ */
 import {
   getAllCategoriesPaths,
   getDynamicFuncs,
@@ -12,9 +15,10 @@ import MuiAlert from "@material-ui/lab/Alert";
 import { IconButton } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Snackbar from "@material-ui/core/Snackbar";
-import { blue } from "@material-ui/core/colors";
+import { lightGreen } from "@material-ui/core/colors";
 import Switch from "@material-ui/core/Switch";
 import React,{useState,useEffect} from 'react';
+import MenuAppBar from "./MenuAppBar";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,23 +38,21 @@ function CircularIndeterminate() {
 
   return (
     <div className={classes.root}>
-      <div className="row justify-content-center">
-        <CircularProgress
-          className={classes.progress}
-          size="1em"
-          thickness={3}
-        />
-      </div>
+      <CircularProgress
+        className={classes.progress}
+        size="1em"
+        thickness={3}
+      />
     </div>
   );
 }
 
 const ColorButton = withStyles((theme) => ({
   root: {
-    color: theme.palette.getContrastText(blue[500]),
-    backgroundColor: blue[500],
+    color: theme.palette.getContrastText(lightGreen[500]),
+    backgroundColor: lightGreen[500],
     "&:hover": {
-      backgroundColor: blue[700],
+      backgroundColor: lightGreen[700],
     },
   },
 }))(Button);
@@ -160,6 +162,7 @@ function AddFaqForm() {
 
   return (
     <React.Fragment>
+      <MenuAppBar/>
       <Snackbar
         open={snackSuccessOpen}
         autoHideDuration={5000}
