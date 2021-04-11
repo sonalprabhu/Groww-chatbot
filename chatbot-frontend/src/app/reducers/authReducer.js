@@ -4,8 +4,8 @@ import Cookies from "js-cookie";
 const authReducer = createSlice({
   name: 'users',
   initialState: {
-        user:Cookies.get('user') || 'guest',
-        userId:Cookies.get('userId') || ''
+        user:'guest',
+        userId:''
   },
   reducers: {
     logout: (state,action) => {

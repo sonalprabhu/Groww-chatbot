@@ -5,7 +5,7 @@ axios.defaults.withCredentials = true
 
 
 async function login(name,password){
-    return axios.get('http://localhost:8081/login',{params: {
+    return axios.get(`${process.env.REACT_APP_BACKEND_URL}/login`,{params: {
     userName: name,
     userPass: password
     }},{withCredentials:true})
@@ -20,7 +20,7 @@ async function login(name,password){
 }
 
 async function logout(){
-    return axios.get('http://localhost:8081/logout',{withCredentials:true})
+    return axios.get(`${process.env.REACT_APP_BACKEND_URL}/logout`,{params:{user:Cookies.get('userId')}},{withCredentials:true})
     .then((response) => {
     Cookies.set('user','guest');
     Cookies.set('userId','');

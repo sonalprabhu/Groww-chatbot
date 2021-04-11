@@ -12,14 +12,27 @@ const kycSchema = new Schema({
 
 const userSchema = new Schema({
     userName: {type: String},
-    userPass: {type: String},
+    userPass: {type: String, select: false},
     userDOB: {type: String},
     userMob: {type: String},
     userMaritalStatus: {type: String},
     userGender: {type: String},
     userKyc: {type: kycSchema},
+    userMaxOrdersPerDay: {type: Number},
+    userOrderPlacedToday: {type: Number},
     userOrders: [{type: mongoose.Schema.Types.ObjectId,ref: 'Order'}],
-    faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],
+},{
+    id: false,
+    versionKey: false,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
 });
+
+userSchema.virtual('userOrdersDocs',{
+    ref: 'Order',
+    localField: 'userOrders',
+    foreignField: '_id',
+    justOne: false,
+})
 
 exports.User = mongoose.model('User',userSchema,'users');

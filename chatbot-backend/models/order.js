@@ -6,8 +6,27 @@ const orderSchema = new Schema({
     orderDate: {type: String},
     category: {type: String},
     products: [{type: mongoose.Schema.Types.ObjectId,ref: 'Product'}],
-    userId: {type: mongoose.Schema.Types.ObjectId,ref: 'User'},
-    faqId: [{type: mongoose.Schema.Types.ObjectId,ref: 'Faq'}],
-})
+    units: [{type: Number}],
+    userId: {type: mongoose.Schema.Types.ObjectId,ref: 'User'}
+},{
+    id: false,
+    versionKey: false,
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true},
+});
+
+orderSchema.virtual('user',{
+    ref: 'User',
+    localField: 'userId',
+    foreignField: '_id',
+    justOne: true,
+});
+
+orderSchema.virtual('productDocs',{
+    ref: 'Product',
+    localField: 'products',
+    foreignField: '_id',
+    justOne: false
+});
 
 exports.Order = mongoose.model('Order',orderSchema,'orders');
