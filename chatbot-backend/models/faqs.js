@@ -18,7 +18,6 @@ const faqQuestionAnswerSchema = new Schema({
 const faqSchema = new Schema({
     faqQuestionAnswer: [{type: faqQuestionAnswerSchema}],
     faqCategoryName: {type: String}
-    // faqCategoryPath: [{type: String}]
 },{
     id: false,
     versionKey: false,

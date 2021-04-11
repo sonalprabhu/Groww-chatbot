@@ -1,7 +1,8 @@
-const { Order } = require('./models/order');
-const { Product } = require('./models/product');
+const { Order } = require('../models/order');
+const { Product } = require('../models/product');
 const mongoose = require('mongoose');
 
+//Dynamic functions used for rendering answers whose faqIsDynamic flag is set to true
 const dynamicQuestions = 
 {
     browseSimilarProducts: (context) => {

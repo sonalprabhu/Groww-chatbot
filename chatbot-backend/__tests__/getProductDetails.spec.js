@@ -1,4 +1,5 @@
-const {app,productResponseMap} = require('../app');
+const {app} = require('../app');
+const {productResponseMap} = require("../api_config/ResponseMapper");
 const supertest = require('supertest');
 const mongoose = require('mongoose');
 const { Product } = require('../models/product');

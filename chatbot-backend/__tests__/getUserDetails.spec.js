@@ -16,6 +16,7 @@ describe("Testing '/getUserDetails' API",()=> {
             userMob: sampleUser.userMob,
             userMaritalStatus: sampleUser.userMaritalStatus,
             userGender: sampleUser.userGender,
+            userOrderPlacedToday: sampleUser.userOrderPlacedToday,
         });
         done();
     });
