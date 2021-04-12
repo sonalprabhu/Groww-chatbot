@@ -3,7 +3,7 @@ Team ID: GROWW-T11 | Team Members: Arnab Ghosh &amp; Sonal Prabhu
 
 ![Groww-website](https://user-images.githubusercontent.com/35455325/114377392-3d47f580-9ba4-11eb-83d9-f4f16f33669a.JPG)
 
-![Groww-admin-portal-add-faq](https://drive.google.com/file/d/1MWQOqxID2ulxeWSujsHk5NpnpTeQ0Pkz/view?usp=sharing)
+![Groww-admin-portal-add-faq](https://drive.google.com/uc?export=view&id=1MWQOqxID2ulxeWSujsHk5NpnpTeQ0Pkz)
 
 # Deployed URLs
 1. Chatbot-Frontend - https://groww-chatbot-website.netlify.app/stocks
