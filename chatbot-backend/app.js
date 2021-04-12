@@ -46,8 +46,8 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-app.get("/", () => {
-  console.log("Welcome to Groww pilot backend");
+app.get("/", (_,res) => {
+  res.send("Welcome to Groww pilot backend");
 });
 
 app.use(router);
