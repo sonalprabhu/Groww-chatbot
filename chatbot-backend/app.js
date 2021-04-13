@@ -7,7 +7,7 @@
  * 4) routes - Contains all the API routes 
  * 5) mock_data - Contains utility functions and db seeding mock data and functions to populate the database with values
  * 6) __tests__ - Contains the test case files for checking the important API endpoints for the chatbot as well as basic routes using Jest and Supertest suite
- * 7) assets - Contains a single image file showing the category tree used in this project
+ * 7) assets - Contains the resources for the category tree structure and context design architecture used in the project.
  * 
  * The application uses NodeJS,Mongoose,MongoDB as tech stack for this application and Jest/Supertest for test cases.
  * Chatbot APIs are documented as part of Swagger UI which runs at port 8080 and the backend application runs at port 8081
